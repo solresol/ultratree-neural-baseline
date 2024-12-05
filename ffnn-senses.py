@@ -6,14 +6,14 @@ import sqlite3
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, random_split
 
 # Define hyperparameters
 EMBEDDING_DIM = 128     # Dimension of the embeddings
 CONTEXT_SIZE = 16       # Number of context word senses
 HIDDEN_DIM = 256        # Dimension of the hidden layer
-BATCH_SIZE = 64         # Batch size for training
-NUM_EPOCHS = 10         # Number of epochs for training
+BATCH_SIZE = 1024       # Batch size for training
+NUM_EPOCHS = 1000       # Maximum number of epochs for training
 LEARNING_RATE = 0.001   # Learning rate for optimizer
 
 class WordSenseDataset(Dataset):
@@ -113,6 +113,18 @@ def main():
     
     # Create dataset and dataloader
     dataset = WordSenseDataset(args.db_path, args.table_name, word_sense_to_index)
+    # Define the split sizes
+    validation_split = 0.1  # 10% of the data for validation
+    dataset_size = len(dataset)
+    validation_size = int(validation_split * dataset_size)
+    training_size = dataset_size - validation_size
+
+    # Split the dataset
+    train_dataset, val_dataset = random_split(dataset, [training_size, validation_size])
+
+    # Create data loaders
+    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE)
     dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
     
     # Instantiate the model
@@ -138,6 +150,10 @@ def main():
         word_sense_to_index = checkpoint['word_sense_to_index']
     else:
         start_epoch = 1
+
+    best_val_loss = float('inf')
+    patience = 3  # Number of epochs to wait before stopping
+    patience_counter = 0
     
     # Training loop
     for epoch in range(start_epoch, NUM_EPOCHS + 1):
@@ -154,17 +170,38 @@ def main():
             if (batch_idx + 1) % 100 == 0:
                 print(f"Epoch [{epoch}/{NUM_EPOCHS}], Batch [{batch_idx + 1}/{len(dataloader)}], Loss: {loss.item():.4f}")
         
-        avg_loss = total_loss / len(dataloader)
-        print(f"Epoch [{epoch}/{NUM_EPOCHS}] completed. Average Loss: {avg_loss:.4f}")
-        
-        # Save model state
-        torch.save({
-            'epoch': epoch,
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            'word_sense_to_index': word_sense_to_index
-        }, args.model_save_path)
-        print(f"Model saved to {args.model_save_path}")
+        avg_train_loss = total_loss / len(dataloader)
+        print(f"Epoch [{epoch}/{NUM_EPOCHS}] completed. Average Loss: {avg_train_loss:.4f}")
 
+        model.eval()
+        total_val_loss = 0
+        with torch.no_grad():
+            for context_batch, target_batch in val_loader:
+                outputs = model(context_batch)
+                loss = criterion(outputs, target_batch)
+                total_val_loss += loss.item()
+        avg_val_loss = total_val_loss / len(val_loader)
+    
+        print(f"Epoch [{epoch}/{NUM_EPOCHS}] completed. Average Training Loss: {avg_train_loss:.4f}, Average Validation Loss: {avg_val_loss:.4f}")
+    
+        # Early stopping check
+        if avg_val_loss < best_val_loss:
+            best_val_loss = avg_val_loss
+            patience_counter = 0
+            # Save the best model
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'word_sense_to_index': word_sense_to_index
+            }, args.model_save_path)
+            print(f"Validation loss improved. Model saved to {args.model_save_path}")
+        else:
+            patience_counter += 1
+            print(f"Validation loss did not improve. Patience counter: {patience_counter}/{patience}")
+            if patience_counter >= patience:
+                print("Early stopping triggered.")
+                break
+        
 if __name__ == "__main__":
     main()
