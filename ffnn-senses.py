@@ -174,10 +174,10 @@ def main():
             
             total_loss += loss.item()
             if (batch_idx + 1) % 100 == 0:
-                print(f"Epoch [{epoch}/{NUM_EPOCHS}], Batch [{batch_idx + 1}/{len(dataloader)}], Loss: {loss.item():.4f}")
+                print(f"Epoch [{epoch}/{args.num_epochs}], Batch [{batch_idx + 1}/{len(dataloader)}], Loss: {loss.item():.4f}")
         
         avg_train_loss = total_loss / len(dataloader)
-        print(f"Epoch [{epoch}/{NUM_EPOCHS}] completed. Average Loss: {avg_train_loss:.4f}")
+        print(f"Epoch [{epoch}/{args.num_epochs}] completed. Average Loss: {avg_train_loss:.4f}")
 
         model.eval()
         total_val_loss = 0
@@ -188,7 +188,7 @@ def main():
                 total_val_loss += loss.item()
         avg_val_loss = total_val_loss / len(val_loader)
     
-        print(f"Epoch [{epoch}/{NUM_EPOCHS}] completed. Average Training Loss: {avg_train_loss:.4f}, Average Validation Loss: {avg_val_loss:.4f}")
+        print(f"Epoch [{epoch}/{args.num_epochs}] completed. Average Training Loss: {avg_train_loss:.4f}, Average Validation Loss: {avg_val_loss:.4f}")
     
         # Early stopping check
         if avg_val_loss < best_val_loss:
