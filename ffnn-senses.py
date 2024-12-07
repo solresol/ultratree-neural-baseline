@@ -81,24 +81,21 @@ class SimpleFFNN(nn.Module):
         
         return out
 
-def build_word_sense_vocab(db_path, table_name):
+def build_vocabulary(db_path, table_name):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute(f"SELECT DISTINCT targetword FROM {table_name}")
     target_senses = set(row[0] for row in cursor.fetchall())
-    
-    # Get unique context senses
+
     context_senses = set()
     for i in range(1, CONTEXT_SIZE + 1):
         cursor.execute(f"SELECT DISTINCT context{i} FROM {table_name}")
         context_senses.update(row[0] for row in cursor.fetchall())
-    
+
     conn.close()
-    
-    # Combine target senses and context senses
+
     all_senses = target_senses.union(context_senses)
-    
-    # Create mappings
+
     word_sense_to_index = {sense: idx for idx, sense in enumerate(sorted(all_senses))}
     index_to_word_sense = {idx: sense for sense, idx in word_sense_to_index.items()}
     """
@@ -116,33 +113,28 @@ def build_word_sense_vocab(db_path, table_name):
     
     vocab_size = len(word_sense_to_index)
     return word_sense_to_index, index_to_word_sense, vocab_size
-
-def main():
+    
+    def parse_arguments():
     parser = argparse.ArgumentParser(description='Train a simple FFNN on word sense data.')
     parser.add_argument('--db-path', type=str, required=True, help='Path to the SQLite database.')
     parser.add_argument('--table-name', type=str, default="training_data", help='Name of the table to read from.')
     parser.add_argument('--model-save-path', type=str, default='model.pt', help='Path to save or load the model.')
     parser.add_argument('--resume', action='store_true', help='Resume training from saved model.')
-    args = parser.parse_args()
-    
-    # Build vocabulary mappings
+    parser.add_argument('--embedding-dim', type=int, default=EMBEDDING_DIM, help='Dimension of the embeddings.')
+    parser.add_argument('--context-size', type=int, default=CONTEXT_SIZE, help='Number of context word senses.')
+    parser.add_argument('--hidden-dim', type=int, default=HIDDEN_DIM, help='Dimension of the hidden layer.')
+    parser.add_argument('--batch-size', type=int, default=BATCH_SIZE, help='Batch size for training.')
+    parser.add_argument('--num-epochs', type=int, default=NUM_EPOCHS, help='Maximum number of epochs for training.')
+    parser.add_argument('--learning-rate', type=float, default=LEARNING_RATE, help='Learning rate for optimizer.')
+    return parser.parse_args()
+
+def main():
+    args = parse_arguments()
+
     print("Building vocabulary...")
-    word_sense_to_index, index_to_word_sense, vocab_size = build_word_sense_vocab(args.db_path, args.table_name)
-    print(f"Vocabulary size: {vocab_size}")
-    
-    # Create dataset and dataloader
-    dataset = WordSenseDataset(args.db_path, args.table_name, word_sense_to_index)
-    # Define the split sizes
-    validation_split = 0.1  # 10% of the data for validation
-    dataset_size = len(dataset)
-    validation_size = int(validation_split * dataset_size)
-    training_size = dataset_size - validation_size
+    word_sense_to_index, index_to_word_sense, vocab_size = build_vocabulary(args.db_path, args.table_name)
 
-    # Split the dataset
-    train_dataset, val_dataset = random_split(dataset, [training_size, validation_size])
-
-    # Create data loaders
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+    train_loader, val_loader = create_datasets(args.db_path, args.table_name, word_sense_to_index, args.batch_size)
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size)
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
     
