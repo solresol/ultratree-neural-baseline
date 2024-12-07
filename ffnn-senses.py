@@ -8,6 +8,14 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader, random_split
 
+"""
+ffnn-senses.py
+
+This script trains a simple feedforward neural network (FFNN) on word sense data.
+It utilizes a SQLite database to load training data, constructs a vocabulary of word senses,
+and trains the model to predict target word senses based on context word senses.
+"""
+
 # Define hyperparameters
 EMBEDDING_DIM = 128     # Dimension of the embeddings
 CONTEXT_SIZE = 16       # Number of context word senses
