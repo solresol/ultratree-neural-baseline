@@ -37,13 +37,6 @@ class WordSenseDataset(Dataset):
     def __getitem__(self, idx):
         sample = self.data[idx]
         target_sense = sample[0]
-"""
-ffnn-senses.py
-
-This script trains a simple feedforward neural network (FFNN) on word sense data.
-It utilizes a SQLite database to load training data, constructs a vocabulary of word senses,
-and trains the model to predict target word senses based on context word senses.
-"""
         context_senses = sample[1:]
         
         # Map word senses to indices
@@ -123,6 +116,13 @@ def main():
     parser.add_argument('--table-name', type=str, default="training_data", help='Name of the table to read from.')
     parser.add_argument('--model-save-path', type=str, default='model.pt', help='Path to save or load the model.')
     parser.add_argument('--resume', action='store_true', help='Resume training from saved model.')
+    parser.add_argument('--embedding-dim', type=int, default=EMBEDDING_DIM, help='Dimension of the embeddings.')
+    parser.add_argument('--context-size', type=int, default=CONTEXT_SIZE, help='Number of context word senses.')
+    parser.add_argument('--hidden-dim', type=int, default=HIDDEN_DIM, help='Dimension of the hidden layer.')
+    parser.add_argument('--batch-size', type=int, default=BATCH_SIZE, help='Batch size for training.')
+    parser.add_argument('--num-epochs', type=int, default=NUM_EPOCHS, help='Maximum number of epochs for training.')
+    parser.add_argument('--learning-rate', type=float, default=LEARNING_RATE, help='Learning rate for optimizer.')
+
     args = parser.parse_args()
     
     # Build vocabulary mappings
@@ -146,13 +146,6 @@ def main():
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size)
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
     
-
-    parser.add_argument('--embedding-dim', type=int, default=EMBEDDING_DIM, help='Dimension of the embeddings.')
-    parser.add_argument('--context-size', type=int, default=CONTEXT_SIZE, help='Number of context word senses.')
-    parser.add_argument('--hidden-dim', type=int, default=HIDDEN_DIM, help='Dimension of the hidden layer.')
-    parser.add_argument('--batch-size', type=int, default=BATCH_SIZE, help='Batch size for training.')
-    parser.add_argument('--num-epochs', type=int, default=NUM_EPOCHS, help='Maximum number of epochs for training.')
-    parser.add_argument('--learning-rate', type=float, default=LEARNING_RATE, help='Learning rate for optimizer.')
 
     # Instantiate the model
     model = SimpleFFNN(
