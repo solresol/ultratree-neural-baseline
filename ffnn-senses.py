@@ -204,7 +204,7 @@ def main():
                 'context_size': CONTEXT_SIZE,
                 'hidden_dim': HIDDEN_DIM,
                 'batch_size': BATCH_SIZE,
-                'learning_rate': LEARNING_RATE
+                'learning_rate': args.learning_rate
             }, args.model_save_path)
             print(f"Validation loss improved. Model saved to {args.model_save_path}")
         else:
