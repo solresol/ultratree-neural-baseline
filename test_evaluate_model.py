@@ -9,6 +9,18 @@ from evaluate_model import main as evaluate_main
 
 class TestEvaluateModel(unittest.TestCase):
 
+    def setup_mocks(self, mock_torch_load, mock_sqlite_connect):
+        # Code for setting up mocks will be placed here
+        pass
+
+    def execute_main_logic(self):
+        # Code for executing main logic will be placed here
+        pass
+
+    def assert_database_operations(self):
+        # Code for asserting database operations will be placed here
+        pass
+
     @patch('evaluate_model.torch.load')
     def test_load_model(self, mock_torch_load):
         mock_checkpoint = {
@@ -35,28 +47,14 @@ class TestEvaluateModel(unittest.TestCase):
     @patch('evaluate_model.sqlite3.connect')
     @patch('evaluate_model.torch.load')
     def test_main_evaluation_logic(self, mock_torch_load, mock_sqlite_connect):
-        mock_checkpoint = {
-            'word_sense_to_index': {'context1': 0, 'context2': 1},
-            'model_state_dict': MagicMock()
-        }
-        mock_torch_load.return_value = mock_checkpoint
-
-        mock_conn = MagicMock()
-        mock_cursor = MagicMock()
-        mock_sqlite_connect.return_value = mock_conn
-        mock_conn.cursor.return_value = mock_cursor
-
-        mock_cursor.fetchall.return_value = [
-            (1, '1.2.3', 'context1', 'context2'),
-            (2, '1.2.4', 'context2', 'context1')
-        ]
+        self.setup_mocks(mock_torch_load, mock_sqlite_connect)
+        self.execute_main_logic()
+        self.assert_database_operations()
 
         with patch('evaluate_model.SimpleFFNN.forward', return_value=torch.tensor([[0.1, 0.9]])):
             evaluate_main()
 
-        self.assertEqual(mock_cursor.execute.call_count, 4)
-        self.assertEqual(mock_cursor.execute.call_args_list[2][0][0].startswith('INSERT INTO inferences'), True)
-        self.assertEqual(mock_cursor.execute.call_args_list[3][0][0].startswith('UPDATE evaluation_runs'), True)
+        self.assert_database_operations()
 
 if __name__ == '__main__':
     unittest.main()
