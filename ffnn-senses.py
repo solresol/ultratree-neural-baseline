@@ -138,7 +138,7 @@ def main():
     
     # Define loss function and optimizer
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
     
     # Load model state if resuming
     if args.resume and os.path.exists(args.model_save_path):
@@ -156,7 +156,7 @@ def main():
     patience_counter = 0
     
     # Training loop
-    for epoch in range(start_epoch, NUM_EPOCHS + 1):
+    for epoch in range(start_epoch, args.num_epochs + 1):
         model.train()
         total_loss = 0
         for batch_idx, (context_batch, target_batch) in enumerate(dataloader):
