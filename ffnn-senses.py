@@ -110,7 +110,7 @@ def build_word_sense_vocab(db_path: str, table_name: str) -> Tuple[Dict[str, int
     vocab_size = len(word_sense_to_index)
     return word_sense_to_index, index_to_word_sense, vocab_size
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description='Train a simple FFNN on word sense data.')
     parser.add_argument('--db-path', type=str, required=True, help='Path to the SQLite database.')
     parser.add_argument('--table-name', type=str, default="training_data", help='Name of the table to read from.')
@@ -138,7 +138,6 @@ from typing import Dict, Tuple
     dataset_size = len(dataset)
     validation_size = int(validation_split * dataset_size)
     training_size = dataset_size - validation_size
-
     # Split the dataset
     train_dataset, val_dataset = random_split(dataset, [training_size, validation_size])
 
