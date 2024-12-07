@@ -200,10 +200,10 @@ def main():
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'word_sense_to_index': word_sense_to_index,
-                'embedding_dim': EMBEDDING_DIM,
-                'context_size': CONTEXT_SIZE,
-                'hidden_dim': HIDDEN_DIM,
-                'batch_size': BATCH_SIZE,
+                'embedding_dim': args.embedding_dim,
+                'context_size': args.context_size,
+                'hidden_dim': args.hidden_dim,
+                'batch_size': args.batch_size,
                 'learning_rate': args.learning_rate
             }, args.model_save_path)
             print(f"Validation loss improved. Model saved to {args.model_save_path}")
