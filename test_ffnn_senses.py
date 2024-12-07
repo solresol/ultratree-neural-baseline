@@ -1,3 +1,4 @@
+from ffnn-senses import argparse
 import os
 import unittest
 
@@ -71,3 +72,64 @@ class TestModelSaving(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+class TestFFNNSensesArgs(unittest.TestCase):
+    def setUp(self) -> None:
+        self.parser = argparse.ArgumentParser(description='Train a simple FFNN on word sense data.')
+        self.parser.add_argument('--db-path', type=str, required=True, help='Path to the SQLite database.')
+        self.parser.add_argument('--table-name', type=str, default="training_data", help='Name of the table to read from.')
+        self.parser.add_argument('--model-save-path', type=str, default='model.pt', help='Path to save or load the model.')
+        self.parser.add_argument('--resume', action='store_true', help='Resume training from saved model.')
+        self.parser.add_argument('--embedding-dim', type=int, default=128, help='Dimension of the embeddings.')
+        self.parser.add_argument('--context-size', type=int, default=16, help='Number of context word senses.')
+        self.parser.add_argument('--hidden-dim', type=int, default=256, help='Dimension of the hidden layer.')
+        self.parser.add_argument('--batch-size', type=int, default=1024, help='Batch size for training.')
+        self.parser.add_argument('--num-epochs', type=int, default=1000, help='Maximum number of epochs for training.')
+        self.parser.add_argument('--learning-rate', type=float, default=0.001, help='Learning rate for optimizer.')
+
+    def test_batch_size_argument(self) -> None:
+        test_args = ['ffnn-senses.py', '--db-path', 'test.db', '--batch-size', '512']
+        with unittest.mock.patch('sys.argv', test_args):
+            args = self.parser.parse_args()
+            self.assertEqual(args.batch_size, 512)
+
+    def test_embedding_dim_argument(self) -> None:
+        test_args = ['ffnn-senses.py', '--db-path', 'test.db', '--embedding-dim', '64']
+        with unittest.mock.patch('sys.argv', test_args):
+            args = self.parser.parse_args()
+            self.assertEqual(args.embedding_dim, 64)
+
+    def test_context_size_argument(self) -> None:
+        test_args = ['ffnn-senses.py', '--db-path', 'test.db', '--context-size', '8']
+        with unittest.mock.patch('sys.argv', test_args):
+            args = self.parser.parse_args()
+            self.assertEqual(args.context_size, 8)
+
+    def test_hidden_dim_argument(self) -> None:
+        test_args = ['ffnn-senses.py', '--db-path', 'test.db', '--hidden-dim', '128']
+        with unittest.mock.patch('sys.argv', test_args):
+            args = self.parser.parse_args()
+            self.assertEqual(args.hidden_dim, 128)
+
+    def test_learning_rate_argument(self) -> None:
+        test_args = ['ffnn-senses.py', '--db-path', 'test.db', '--learning-rate', '0.01']
+        with unittest.mock.patch('sys.argv', test_args):
+            args = self.parser.parse_args()
+            self.assertEqual(args.learning_rate, 0.01)
+
+    def test_num_epochs_argument(self) -> None:
+        test_args = ['ffnn-senses.py', '--db-path', 'test.db', '--num-epochs', '500']
+        with unittest.mock.patch('sys.argv', test_args):
+            args = self.parser.parse_args()
+            self.assertEqual(args.num_epochs, 500)
+
+    def test_invalid_batch_size_argument(self) -> None:
+        test_args = ['ffnn-senses.py', '--db-path', 'test.db', '--batch-size', '-1']
+        with unittest.mock.patch('sys.argv', test_args):
+            with self.assertRaises(SystemExit):
+                self.parser.parse_args()
+
+    def test_invalid_learning_rate_argument(self) -> None:
+        test_args = ['ffnn-senses.py', '--db-path', 'test.db', '--learning-rate', '-0.01']
+        with unittest.mock.patch('sys.argv', test_args):
+            with self.assertRaises(SystemExit):
+                self.parser.parse_args()

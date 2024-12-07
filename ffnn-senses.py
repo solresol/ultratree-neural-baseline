@@ -2,6 +2,7 @@
 
 import argparse
 import os
+from typing import Dict, Tuple, Any
 import sqlite3
 import torch
 import torch.nn as nn
@@ -74,7 +75,7 @@ class SimpleFFNN(nn.Module):
         
         return out
 
-def build_word_sense_vocab(db_path, table_name):
+def build_word_sense_vocab(db_path: str, table_name: str) -> Tuple[Dict[str, int], Dict[int, str], int]:
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute(f"SELECT DISTINCT targetword FROM {table_name}")
@@ -110,7 +111,7 @@ def build_word_sense_vocab(db_path, table_name):
     vocab_size = len(word_sense_to_index)
     return word_sense_to_index, index_to_word_sense, vocab_size
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description='Train a simple FFNN on word sense data.')
     parser.add_argument('--db-path', type=str, required=True, help='Path to the SQLite database.')
     parser.add_argument('--table-name', type=str, default="training_data", help='Name of the table to read from.')

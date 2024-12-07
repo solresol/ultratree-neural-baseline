@@ -5,6 +5,7 @@ import sqlite3
 import torch
 import torch.nn as nn
 import time
+from typing import Dict, Tuple, Any
 import os
 
 # Hyperparameters for model structure
@@ -81,7 +82,7 @@ def compute_penalty(correct_path, predicted_path):
     # The problem statement: If correct=1.2.3.4.5 and pred=1.2.3.6.7 then prefix=3, penalty=2^-3=0.125
     return 2**(-prefix_length)
 
-def main():
+def main() -> None:
     """
     Computes the penalty based on the similarity between the correct and predicted paths.
 
