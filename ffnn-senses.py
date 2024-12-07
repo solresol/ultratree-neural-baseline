@@ -123,9 +123,9 @@ def main():
     train_dataset, val_dataset = random_split(dataset, [training_size, validation_size])
 
     # Create data loaders
-    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE)
-    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=args.batch_size)
+    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
     
     # Instantiate the model
     model = SimpleFFNN(
