@@ -37,6 +37,13 @@ class WordSenseDataset(Dataset):
     def __getitem__(self, idx):
         sample = self.data[idx]
         target_sense = sample[0]
+"""
+ffnn-senses.py
+
+This script trains a simple feedforward neural network (FFNN) on word sense data.
+It utilizes a SQLite database to load training data, constructs a vocabulary of word senses,
+and trains the model to predict target word senses based on context word senses.
+"""
         context_senses = sample[1:]
         
         # Map word senses to indices
@@ -94,6 +101,18 @@ def build_word_sense_vocab(db_path, table_name):
     # Create mappings
     word_sense_to_index = {sense: idx for idx, sense in enumerate(sorted(all_senses))}
     index_to_word_sense = {idx: sense for sense, idx in word_sense_to_index.items()}
+    """
+    Builds vocabulary mappings from a database of word senses.
+
+    Args:
+        db_path (str): Path to the SQLite database.
+        table_name (str): Name of the table containing word sense data.
+
+    Returns:
+        word_sense_to_index (dict): Mapping from word senses to their indices.
+        index_to_word_sense (dict): Mapping from indices to word senses.
+        vocab_size (int): Total number of unique word senses.
+    """
     
     vocab_size = len(word_sense_to_index)
     return word_sense_to_index, index_to_word_sense, vocab_size
@@ -129,6 +148,21 @@ def main():
     
     # Instantiate the model
     model = SimpleFFNN(
+    """
+    Main function to set up and execute the training process for the FFNN.
+
+    This function handles argument parsing, vocabulary building, dataset creation,
+    model instantiation, and manages the training loop including early stopping.
+
+    It saves the best model based on validation loss and supports resuming training
+    from a saved model state.
+
+    Command-line Arguments:
+        --db-path (str): Path to the SQLite database.
+        --table-name (str): Name of the table to read from.
+        --model-save-path (str): Path to save or load the model.
+        --resume (bool): Flag to resume training from a saved model.
+    """
         vocab_size=vocab_size,
         embedding_dim=EMBEDDING_DIM,
         context_size=CONTEXT_SIZE,
