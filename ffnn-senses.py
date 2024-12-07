@@ -129,10 +129,16 @@ def main():
     
     # Instantiate the model
     model = SimpleFFNN(
+    parser.add_argument('--embedding-dim', type=int, default=EMBEDDING_DIM, help='Dimension of the embeddings.')
+    parser.add_argument('--context-size', type=int, default=CONTEXT_SIZE, help='Number of context word senses.')
+    parser.add_argument('--hidden-dim', type=int, default=HIDDEN_DIM, help='Dimension of the hidden layer.')
+    parser.add_argument('--batch-size', type=int, default=BATCH_SIZE, help='Batch size for training.')
+    parser.add_argument('--num-epochs', type=int, default=NUM_EPOCHS, help='Maximum number of epochs for training.')
+    parser.add_argument('--learning-rate', type=float, default=LEARNING_RATE, help='Learning rate for optimizer.')
         vocab_size=vocab_size,
-        embedding_dim=EMBEDDING_DIM,
-        context_size=CONTEXT_SIZE,
-        hidden_dim=HIDDEN_DIM,
+        embedding_dim=args.embedding_dim,
+        context_size=args.context_size,
+        hidden_dim=args.hidden_dim,
         output_dim=vocab_size  # Output dimension is the same as vocabulary size
     )
     
