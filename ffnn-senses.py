@@ -37,6 +37,13 @@ class WordSenseDataset(Dataset):
     def __getitem__(self, idx):
         sample = self.data[idx]
         target_sense = sample[0]
+"""
+ffnn-senses.py
+
+This script trains a simple feedforward neural network (FFNN) on word sense data.
+It utilizes a SQLite database to load training data, constructs a vocabulary of word senses,
+and trains the model to predict target word senses based on context word senses.
+"""
         context_senses = sample[1:]
         
         # Map word senses to indices
@@ -74,35 +81,40 @@ class SimpleFFNN(nn.Module):
         
         return out
 
-def query_unique_senses(db_path, table_name):
+def build_word_sense_vocab(db_path, table_name):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute(f"SELECT DISTINCT targetword FROM {table_name}")
     target_senses = set(row[0] for row in cursor.fetchall())
     
+    # Get unique context senses
     context_senses = set()
     for i in range(1, CONTEXT_SIZE + 1):
         cursor.execute(f"SELECT DISTINCT context{i} FROM {table_name}")
         context_senses.update(row[0] for row in cursor.fetchall())
     
     conn.close()
-    return target_senses, context_senses
-
-def create_vocab_mappings(target_senses, context_senses):
+    
+    # Combine target senses and context senses
     all_senses = target_senses.union(context_senses)
+    
+    # Create mappings
     word_sense_to_index = {sense: idx for idx, sense in enumerate(sorted(all_senses))}
     index_to_word_sense = {idx: sense for sense, idx in word_sense_to_index.items()}
+    """
+    Builds vocabulary mappings from a database of word senses.
+
+    Args:
+        db_path (str): Path to the SQLite database.
+        table_name (str): Name of the table containing word sense data.
+
+    Returns:
+        word_sense_to_index (dict): Mapping from word senses to their indices.
+        index_to_word_sense (dict): Mapping from indices to word senses.
+        vocab_size (int): Total number of unique word senses.
+    """
+    
     vocab_size = len(word_sense_to_index)
-    return word_sense_to_index, index_to_word_sense, vocab_size
-
-def build_word_sense_vocab(db_path, table_name):
-    target_senses, context_senses = query_unique_senses(db_path, table_name)
-    return create_vocab_mappings(target_senses, context_senses)
-
-def build_and_print_vocab(db_path, table_name):
-    print("Building vocabulary...")
-    word_sense_to_index, index_to_word_sense, vocab_size = build_word_sense_vocab(db_path, table_name)
-    print(f"Vocabulary size: {vocab_size}")
     return word_sense_to_index, index_to_word_sense, vocab_size
 
 def main():
@@ -116,23 +128,41 @@ def main():
     # Build vocabulary mappings
     print("Building vocabulary...")
     word_sense_to_index, index_to_word_sense, vocab_size = build_word_sense_vocab(args.db_path, args.table_name)
-    train_loader, val_loader, dataloader = create_datasets_and_loaders(args.db_path, args.table_name, word_sense_to_index)
-    dataset = WordSenseDataset(db_path, table_name, word_sense_to_index)
-    validation_split = 0.1
+    print(f"Vocabulary size: {vocab_size}")
+    
+    # Create dataset and dataloader
+    dataset = WordSenseDataset(args.db_path, args.table_name, word_sense_to_index)
+    # Define the split sizes
+    validation_split = 0.1  # 10% of the data for validation
     dataset_size = len(dataset)
     validation_size = int(validation_split * dataset_size)
     training_size = dataset_size - validation_size
-    
+
+    # Split the dataset
     train_dataset, val_dataset = random_split(dataset, [training_size, validation_size])
-    
+
+    # Create data loaders
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE)
     dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
     
-    return train_loader, val_loader, dataloader
-    
     # Instantiate the model
     model = SimpleFFNN(
+    """
+    Main function to set up and execute the training process for the FFNN.
+
+    This function handles argument parsing, vocabulary building, dataset creation,
+    model instantiation, and manages the training loop including early stopping.
+
+    It saves the best model based on validation loss and supports resuming training
+    from a saved model state.
+
+    Command-line Arguments:
+        --db-path (str): Path to the SQLite database.
+        --table-name (str): Name of the table to read from.
+        --model-save-path (str): Path to save or load the model.
+        --resume (bool): Flag to resume training from a saved model.
+    """
         vocab_size=vocab_size,
         embedding_dim=EMBEDDING_DIM,
         context_size=CONTEXT_SIZE,
