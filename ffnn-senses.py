@@ -32,7 +32,7 @@ class WordSenseDataset(Dataset):
         conn.close()
         return rows
     
-    def __len__(self) -> int:
+    def __len__(self):
         return len(self.data)
     
     def __getitem__(self, idx):
@@ -115,7 +115,6 @@ def main() -> None:
     parser = argparse.ArgumentParser(description='Train a simple FFNN on word sense data.')
     parser.add_argument('--db-path', type=str, required=True, help='Path to the SQLite database.')
     parser.add_argument('--table-name', type=str, default="training_data", help='Name of the table to read from.')
-from typing import Dict, Tuple
     parser.add_argument('--model-save-path', type=str, default='model.pt', help='Path to save or load the model.')
     parser.add_argument('--resume', action='store_true', help='Resume training from saved model.')
     parser.add_argument('--embedding-dim', type=int, default=EMBEDDING_DIM, help='Dimension of the embeddings.')
@@ -139,6 +138,7 @@ from typing import Dict, Tuple
     dataset_size = len(dataset)
     validation_size = int(validation_split * dataset_size)
     training_size = dataset_size - validation_size
+
     # Split the dataset
     train_dataset, val_dataset = random_split(dataset, [training_size, validation_size])
 
