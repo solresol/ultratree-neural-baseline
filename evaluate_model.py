@@ -29,13 +29,12 @@ class SimpleFFNN(nn.Module):
         out = self.fc2(out)
         return out
 
-def load_model(model_file):
-    # Load the checkpoint
+def load_model_from_checkpoint(model_file):
     checkpoint = torch.load(model_file, map_location='cpu')
     word_sense_to_index = checkpoint['word_sense_to_index']
     index_to_word_sense = {idx: sense for sense, idx in word_sense_to_index.items()}
     vocab_size = len(word_sense_to_index)
-    
+
     model = SimpleFFNN(
         vocab_size=vocab_size,
         embedding_dim=EMBEDDING_DIM,
@@ -45,11 +44,11 @@ def load_model(model_file):
     )
     model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
-    
-    # Count parameters
-    model_parameter_count = sum(p.numel() for p in model.parameters())
-    
-    return model, word_sense_to_index, index_to_word_sense, vocab_size, model_parameter_count
+
+    return model, word_sense_to_index, index_to_word_sense, vocab_size
+
+def count_model_parameters(model):
+    return sum(p.numel() for p in model.parameters())
 
 def compute_penalty(correct_path, predicted_path):
     if correct_path == predicted_path:
@@ -69,7 +68,8 @@ def compute_penalty(correct_path, predicted_path):
     return 2**(-prefix_length)
 
 def load_and_prepare_model(model_file):
-    model, word_sense_to_index, index_to_word_sense, vocab_size, model_parameter_count = load_model(model_file)
+    model, word_sense_to_index, index_to_word_sense, vocab_size = load_model_from_checkpoint(model_file)
+    model_parameter_count = count_model_parameters(model)
     return model, word_sense_to_index, index_to_word_sense, vocab_size, model_parameter_count
     input_conn = sqlite3.connect(input_db)
     input_cursor = input_conn.cursor()
