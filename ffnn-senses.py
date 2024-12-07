@@ -74,29 +74,30 @@ class SimpleFFNN(nn.Module):
         
         return out
 
-def build_word_sense_vocab(db_path, table_name):
+def query_unique_senses(db_path, table_name):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute(f"SELECT DISTINCT targetword FROM {table_name}")
     target_senses = set(row[0] for row in cursor.fetchall())
     
-    # Get unique context senses
     context_senses = set()
     for i in range(1, CONTEXT_SIZE + 1):
         cursor.execute(f"SELECT DISTINCT context{i} FROM {table_name}")
         context_senses.update(row[0] for row in cursor.fetchall())
     
     conn.close()
-    
-    # Combine target senses and context senses
+    return target_senses, context_senses
+
+def create_vocab_mappings(target_senses, context_senses):
     all_senses = target_senses.union(context_senses)
-    
-    # Create mappings
     word_sense_to_index = {sense: idx for idx, sense in enumerate(sorted(all_senses))}
     index_to_word_sense = {idx: sense for sense, idx in word_sense_to_index.items()}
-    
     vocab_size = len(word_sense_to_index)
     return word_sense_to_index, index_to_word_sense, vocab_size
+
+def build_word_sense_vocab(db_path, table_name):
+    target_senses, context_senses = query_unique_senses(db_path, table_name)
+    return create_vocab_mappings(target_senses, context_senses)
 
 def build_and_print_vocab(db_path, table_name):
     print("Building vocabulary...")
