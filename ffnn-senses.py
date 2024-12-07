@@ -98,6 +98,12 @@ def build_word_sense_vocab(db_path, table_name):
     vocab_size = len(word_sense_to_index)
     return word_sense_to_index, index_to_word_sense, vocab_size
 
+def build_and_print_vocab(db_path, table_name):
+    print("Building vocabulary...")
+    word_sense_to_index, index_to_word_sense, vocab_size = build_word_sense_vocab(db_path, table_name)
+    print(f"Vocabulary size: {vocab_size}")
+    return word_sense_to_index, index_to_word_sense, vocab_size
+
 def main():
     parser = argparse.ArgumentParser(description='Train a simple FFNN on word sense data.')
     parser.add_argument('--db-path', type=str, required=True, help='Path to the SQLite database.')
@@ -109,23 +115,20 @@ def main():
     # Build vocabulary mappings
     print("Building vocabulary...")
     word_sense_to_index, index_to_word_sense, vocab_size = build_word_sense_vocab(args.db_path, args.table_name)
-    print(f"Vocabulary size: {vocab_size}")
-    
-    # Create dataset and dataloader
-    dataset = WordSenseDataset(args.db_path, args.table_name, word_sense_to_index)
-    # Define the split sizes
-    validation_split = 0.1  # 10% of the data for validation
+    train_loader, val_loader, dataloader = create_datasets_and_loaders(args.db_path, args.table_name, word_sense_to_index)
+    dataset = WordSenseDataset(db_path, table_name, word_sense_to_index)
+    validation_split = 0.1
     dataset_size = len(dataset)
     validation_size = int(validation_split * dataset_size)
     training_size = dataset_size - validation_size
-
-    # Split the dataset
+    
     train_dataset, val_dataset = random_split(dataset, [training_size, validation_size])
-
-    # Create data loaders
+    
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE)
     dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
+    
+    return train_loader, val_loader, dataloader
     
     # Instantiate the model
     model = SimpleFFNN(
