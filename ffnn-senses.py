@@ -193,7 +193,12 @@ def main():
                 'epoch': epoch,
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
-                'word_sense_to_index': word_sense_to_index
+                'word_sense_to_index': word_sense_to_index,
+                'embedding_dim': EMBEDDING_DIM,
+                'context_size': CONTEXT_SIZE,
+                'hidden_dim': HIDDEN_DIM,
+                'batch_size': BATCH_SIZE,
+                'learning_rate': LEARNING_RATE
             }, args.model_save_path)
             print(f"Validation loss improved. Model saved to {args.model_save_path}")
         else:
