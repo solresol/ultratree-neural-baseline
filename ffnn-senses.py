@@ -37,6 +37,13 @@ class WordSenseDataset(Dataset):
     def __getitem__(self, idx):
         sample = self.data[idx]
         target_sense = sample[0]
+"""
+ffnn-senses.py
+
+This script trains a simple feedforward neural network (FFNN) on word sense data.
+It utilizes a SQLite database to load training data, constructs a vocabulary of word senses,
+and trains the model to predict target word senses based on context word senses.
+"""
         context_senses = sample[1:]
         
         # Map word senses to indices
@@ -94,6 +101,18 @@ def build_word_sense_vocab(db_path, table_name):
     # Create mappings
     word_sense_to_index = {sense: idx for idx, sense in enumerate(sorted(all_senses))}
     index_to_word_sense = {idx: sense for sense, idx in word_sense_to_index.items()}
+    """
+    Builds vocabulary mappings from a database of word senses.
+
+    Args:
+        db_path (str): Path to the SQLite database.
+        table_name (str): Name of the table containing word sense data.
+
+    Returns:
+        word_sense_to_index (dict): Mapping from word senses to their indices.
+        index_to_word_sense (dict): Mapping from indices to word senses.
+        vocab_size (int): Total number of unique word senses.
+    """
     
     vocab_size = len(word_sense_to_index)
     return word_sense_to_index, index_to_word_sense, vocab_size
@@ -127,14 +146,16 @@ def main():
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size)
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
     
-    # Instantiate the model
-    model = SimpleFFNN(
+
     parser.add_argument('--embedding-dim', type=int, default=EMBEDDING_DIM, help='Dimension of the embeddings.')
     parser.add_argument('--context-size', type=int, default=CONTEXT_SIZE, help='Number of context word senses.')
     parser.add_argument('--hidden-dim', type=int, default=HIDDEN_DIM, help='Dimension of the hidden layer.')
     parser.add_argument('--batch-size', type=int, default=BATCH_SIZE, help='Batch size for training.')
     parser.add_argument('--num-epochs', type=int, default=NUM_EPOCHS, help='Maximum number of epochs for training.')
     parser.add_argument('--learning-rate', type=float, default=LEARNING_RATE, help='Learning rate for optimizer.')
+
+    # Instantiate the model
+    model = SimpleFFNN(
         vocab_size=vocab_size,
         embedding_dim=args.embedding_dim,
         context_size=args.context_size,
