@@ -34,6 +34,12 @@ def load_model(model_file):
     checkpoint = torch.load(model_file, map_location='cpu')
     word_sense_to_index = checkpoint['word_sense_to_index']
     index_to_word_sense = {idx: sense for sense, idx in word_sense_to_index.items()}
+"""
+evaluate_model.py
+
+This script evaluates a neural network model on a given dataset and stores the results in a SQLite database.
+It loads a pre-trained model, processes input data, makes predictions, computes penalties, and records the evaluation results.
+"""
     vocab_size = len(word_sense_to_index)
     
     model = SimpleFFNN(
@@ -50,6 +56,19 @@ def load_model(model_file):
     model_parameter_count = sum(p.numel() for p in model.parameters())
     
     return model, word_sense_to_index, index_to_word_sense, vocab_size, model_parameter_count
+    """
+    Loads a neural network model from a checkpoint file.
+
+    Args:
+        model_file (str): Path to the model checkpoint file.
+
+    Returns:
+        model (SimpleFFNN): The loaded neural network model.
+        word_sense_to_index (dict): Mapping from word senses to their indices.
+        index_to_word_sense (dict): Mapping from indices to word senses.
+        vocab_size (int): Size of the vocabulary.
+        model_parameter_count (int): Total number of parameters in the model.
+    """
 
 def compute_penalty(correct_path, predicted_path):
     if correct_path == predicted_path:
@@ -69,6 +88,16 @@ def compute_penalty(correct_path, predicted_path):
     return 2**(-prefix_length)
 
 def main():
+    """
+    Computes the penalty based on the similarity between the correct and predicted paths.
+
+    Args:
+        correct_path (str): The correct path as a string.
+        predicted_path (str): The predicted path as a string.
+
+    Returns:
+        float: The penalty value, where 0.0 indicates an exact match and higher values indicate greater dissimilarity.
+    """
     parser = argparse.ArgumentParser(description='Evaluate a model on dataset and write inferences.')
     parser.add_argument('--model', type=str, required=True, help='Path to the model file (checkpoint).')
     parser.add_argument('--input-db', type=str, required=True, help='Path to the input SQLite database (with evaluation data).')
@@ -96,6 +125,12 @@ def main():
     # Prepare output DB
     output_conn = sqlite3.connect(args.output_db)
     output_cursor = output_conn.cursor()
+    """
+    Main function to evaluate the model.
+
+    This function parses command-line arguments, loads the model, connects to the input and output databases,
+    fetches evaluation data, performs predictions, computes penalties, and stores the results in the database.
+    """
     
     # Create tables if not exist
     output_cursor.execute("""
@@ -114,6 +149,13 @@ def main():
         )
     """)
     output_cursor.execute("""
+    # Create tables if not exist
+    """
+    Database Operations:
+
+    - Connects to the input SQLite database to fetch evaluation data.
+    - Prepares the output SQLite database by creating necessary tables if they do not exist.
+    """
         CREATE TABLE IF NOT EXISTS inferences (
             id INTEGER PRIMARY KEY,
             validation_run_id integer references evaluation_runs(evaluation_run_id),
@@ -128,6 +170,11 @@ def main():
     # Insert a run record (partial)
     # We'll update number_of_data_points and total_loss at the end
     output_cursor.execute("""
+    # Insert a run record (partial)
+    """
+    - Inserts a new record into the evaluation_runs table to log the start of an evaluation run.
+    - Commits the transaction to save the changes.
+    """
         INSERT INTO evaluation_runs(description, model_file, model_parameter_count, context_length, evaluation_datafile, evaluation_table)
         VALUES (?, ?, ?, ?, ?, ?)
     """, (args.description, os.path.abspath(args.model), model_parameter_count, CONTEXT_SIZE, os.path.abspath(args.input_db), args.table))
@@ -162,6 +209,11 @@ def main():
             
             loss = compute_penalty(correct_path, predicted_path)
             total_loss += loss
+    # Evaluate
+    """
+    - Iterates through the fetched data rows, makes predictions using the model, computes penalties,
+      and inserts the results into the inferences table.
+    """
             count += 1
             
             # Insert into inferences
@@ -186,3 +238,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # Update evaluation_runs with final info
+    """
+    - Updates the evaluation_runs table with the final number of data points processed and the total loss.
+    - Commits the transaction and closes the database connection.
+    """
