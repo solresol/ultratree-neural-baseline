@@ -69,14 +69,15 @@ def compute_penalty(correct_path, predicted_path):
     return 2**(-prefix_length)
 
 def main():
+    args = parse_arguments()
+def parse_arguments():
     parser = argparse.ArgumentParser(description='Evaluate a model on dataset and write inferences.')
     parser.add_argument('--model', type=str, required=True, help='Path to the model file (checkpoint).')
     parser.add_argument('--input-db', type=str, required=True, help='Path to the input SQLite database (with evaluation data).')
     parser.add_argument('--output-db', type=str, required=True, help='Path to the output SQLite database (for results).')
     parser.add_argument('--description', type=str, required=True, help='Description of this evaluation run.')
     parser.add_argument('--table', type=str, default='training_data', help='Table to read from in input-db (default: training_data).')
-    args = parser.parse_args()
-    
+    return parser.parse_args()
     # Load model and vocabulary
     model, word_sense_to_index, index_to_word_sense, vocab_size, model_parameter_count = load_model(args.model)
     
@@ -95,35 +96,18 @@ def main():
     
     # Prepare output DB
     output_conn = sqlite3.connect(args.output_db)
-    output_cursor = output_conn.cursor()
+def fetch_evaluation_data(args):
+    input_conn = sqlite3.connect(args.input_db)
+    input_cursor = input_conn.cursor()
+    query = f"SELECT id, targetword"
+    for i in range(1, CONTEXT_SIZE+1):
+        query += f", context{i}"
+    query += f" FROM {args.table}"
     
-    # Create tables if not exist
-    output_cursor.execute("""
-        CREATE TABLE IF NOT EXISTS evaluation_runs (
-            evaluation_run_id integer primary key,
-            evaluation_start_time timestamp default current_timestamp,
-            evaluation_end_time timestamp,
-            description text not null,
-            model_file text not null,
-            model_parameter_count integer,
-            context_length integer,
-            evaluation_datafile text not null,
-            evaluation_table text not null,
-            number_of_data_points integer,
-            total_loss float
-        )
-    """)
-    output_cursor.execute("""
-        CREATE TABLE IF NOT EXISTS inferences (
-            id INTEGER PRIMARY KEY,
-            validation_run_id integer references evaluation_runs(evaluation_run_id),
-            input_id INTEGER,
-            predicted_path TEXT,
-            correct_path TEXT,
-            loss REAL,
-            when_predicted TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
+    input_cursor.execute(query)
+    rows = input_cursor.fetchall()
+    input_conn.close()
+    return rows
     
     # Insert a run record (partial)
     # We'll update number_of_data_points and total_loss at the end
