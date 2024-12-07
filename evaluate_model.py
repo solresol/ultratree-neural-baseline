@@ -28,8 +28,8 @@ class SimpleFFNN(nn.Module):
 def load_model(model_file: str) -> Tuple[SimpleFFNN, Dict[str, int], Dict[int, str], int, int]:
     # Load the checkpoint
     checkpoint = torch.load(model_file, map_location='cpu')
-    word_sense_to_index = checkpoint['word_sense_to_index']
-    index_to_word_sense = {idx: sense for sense, idx in word_sense_to_index.items()}
+    word_sense_to_index: Dict[str, int] = checkpoint['word_sense_to_index']
+    index_to_word_sense: Dict[int, str] = {idx: sense for sense, idx in word_sense_to_index.items()}
 """
 evaluate_model.py
 
@@ -38,7 +38,7 @@ It loads a pre-trained model, processes input data, makes predictions, computes 
 """
     vocab_size = len(word_sense_to_index)
     
-    model = SimpleFFNN(
+    model: SimpleFFNN = SimpleFFNN(
         vocab_size = vocab_size,
         embedding_dim = checkpoint['embedding_dim'],
         context_size = checkpoint['context_size'],
@@ -84,6 +84,16 @@ def compute_penalty(correct_path, predicted_path):
     return 2**(-prefix_length)
 
 def main() -> None:
+    args: argparse.Namespace
+    model: SimpleFFNN
+    word_sense_to_index: Dict[str, int]
+    index_to_word_sense: Dict[int, str]
+    vocab_size: int
+    model_parameter_count: int
+    input_conn: sqlite3.Connection
+    output_conn: sqlite3.Connection
+    input_cursor: sqlite3.Cursor
+    output_cursor: sqlite3.Cursor
     """
     Computes the penalty based on the similarity between the correct and predicted paths.
 
@@ -100,14 +110,14 @@ def main() -> None:
     parser.add_argument('--output-db', type=str, required=True, help='Path to the output SQLite database (for results).')
     parser.add_argument('--description', type=str, required=True, help='Description of this evaluation run.')
     parser.add_argument('--table', type=str, default='training_data', help='Table to read from in input-db (default: training_data).')
-    args = parser.parse_args()
+    args: argparse.Namespace = parser.parse_args()
     
     # Load model and vocabulary
     model, word_sense_to_index, index_to_word_sense, vocab_size, model_parameter_count = load_model(args.model)
     
     # Connect to input DB and fetch data
-    input_conn = sqlite3.connect(args.input_db)
-    input_cursor = input_conn.cursor()
+    input_conn: sqlite3.Connection = sqlite3.connect(args.input_db)
+    input_cursor: sqlite3.Cursor = input_conn.cursor()
     # We assume the table schema includes columns: id, targetword, context1...context16
     query = f"SELECT id, targetword"
     for i in range(1, CONTEXT_SIZE+1):
@@ -119,8 +129,8 @@ def main() -> None:
     input_conn.close()
     
     # Prepare output DB
-    output_conn = sqlite3.connect(args.output_db)
-    output_cursor = output_conn.cursor()
+    output_conn: sqlite3.Connection = sqlite3.connect(args.output_db)
+    output_cursor: sqlite3.Cursor = output_conn.cursor()
     """
     Main function to evaluate the model.
 
