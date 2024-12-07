@@ -118,6 +118,22 @@ def build_word_sense_vocab(db_path, table_name):
     return word_sense_to_index, index_to_word_sense, vocab_size
 
 def main():
+    """
+    Trains a simple feedforward neural network (FFNN) on word sense data.
+
+    Parses the following command-line arguments:
+    --db-path: Required. The path to the SQLite database containing the training data.
+    --table-name: The name of the table in the database to query for training data. Defaults to 'training_data'.
+    --model-save-path: The path where the trained model will be saved. Defaults to 'model.pt'.
+    --resume: Flag to indicate if training should be resumed from a previously saved model.
+
+    The training process involves several steps:
+    - Building vocabulary mappings from word senses to indices.
+    - Creating the dataset and corresponding data loaders for batching.
+    - Initializing the FFNN model with specified embedding dimension, context size, hidden layer dimension.
+    - Defining the loss function and optimizer to be used during training.
+
+    """
     parser = argparse.ArgumentParser(description='Train a simple FFNN on word sense data.')
     parser.add_argument('--db-path', type=str, required=True, help='Path to the SQLite database.')
     parser.add_argument('--table-name', type=str, default="training_data", help='Name of the table to read from.')
