@@ -143,37 +143,30 @@ def main() -> None:
     train_dataset, val_dataset = random_split(dataset, [training_size, validation_size])
 
     # Create data loaders
-    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE)
-    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=args.batch_size)
+    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
     
+
+    parser.add_argument('--embedding-dim', type=int, default=EMBEDDING_DIM, help='Dimension of the embeddings.')
+    parser.add_argument('--context-size', type=int, default=CONTEXT_SIZE, help='Number of context word senses.')
+    parser.add_argument('--hidden-dim', type=int, default=HIDDEN_DIM, help='Dimension of the hidden layer.')
+    parser.add_argument('--batch-size', type=int, default=BATCH_SIZE, help='Batch size for training.')
+    parser.add_argument('--num-epochs', type=int, default=NUM_EPOCHS, help='Maximum number of epochs for training.')
+    parser.add_argument('--learning-rate', type=float, default=LEARNING_RATE, help='Learning rate for optimizer.')
+
     # Instantiate the model
     model = SimpleFFNN(
-    """
-    Main function to set up and execute the training process for the FFNN.
-
-    This function handles argument parsing, vocabulary building, dataset creation,
-    model instantiation, and manages the training loop including early stopping.
-
-    It saves the best model based on validation loss and supports resuming training
-    from a saved model state.
-
-    Command-line Arguments:
-        --db-path (str): Path to the SQLite database.
-        --table-name (str): Name of the table to read from.
-        --model-save-path (str): Path to save or load the model.
-        --resume (bool): Flag to resume training from a saved model.
-    """
         vocab_size=vocab_size,
-        embedding_dim=EMBEDDING_DIM,
-        context_size=CONTEXT_SIZE,
-        hidden_dim=HIDDEN_DIM,
+        embedding_dim=args.embedding_dim,
+        context_size=args.context_size,
+        hidden_dim=args.hidden_dim,
         output_dim=vocab_size  # Output dimension is the same as vocabulary size
     )
     
     # Define loss function and optimizer
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
     
     # Load model state if resuming
     if args.resume and os.path.exists(args.model_save_path):
@@ -191,7 +184,7 @@ def main() -> None:
     patience_counter = 0
     
     # Training loop
-    for epoch in range(start_epoch, NUM_EPOCHS + 1):
+    for epoch in range(start_epoch, args.num_epochs + 1):
         model.train()
         total_loss = 0
         for batch_idx, (context_batch, target_batch) in enumerate(dataloader):
@@ -203,10 +196,10 @@ def main() -> None:
             
             total_loss += loss.item()
             if (batch_idx + 1) % 100 == 0:
-                print(f"Epoch [{epoch}/{NUM_EPOCHS}], Batch [{batch_idx + 1}/{len(dataloader)}], Loss: {loss.item():.4f}")
+                print(f"Epoch [{epoch}/{args.num_epochs}], Batch [{batch_idx + 1}/{len(dataloader)}], Loss: {loss.item():.4f}")
         
         avg_train_loss = total_loss / len(dataloader)
-        print(f"Epoch [{epoch}/{NUM_EPOCHS}] completed. Average Loss: {avg_train_loss:.4f}")
+        print(f"Epoch [{epoch}/{args.num_epochs}] completed. Average Loss: {avg_train_loss:.4f}")
 
         model.eval()
         total_val_loss = 0
@@ -217,7 +210,7 @@ def main() -> None:
                 total_val_loss += loss.item()
         avg_val_loss = total_val_loss / len(val_loader)
     
-        print(f"Epoch [{epoch}/{NUM_EPOCHS}] completed. Average Training Loss: {avg_train_loss:.4f}, Average Validation Loss: {avg_val_loss:.4f}")
+        print(f"Epoch [{epoch}/{args.num_epochs}] completed. Average Training Loss: {avg_train_loss:.4f}, Average Validation Loss: {avg_val_loss:.4f}")
     
         # Early stopping check
         if avg_val_loss < best_val_loss:
@@ -229,11 +222,11 @@ def main() -> None:
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'word_sense_to_index': word_sense_to_index,
-                'embedding_dim': EMBEDDING_DIM,
-                'context_size': CONTEXT_SIZE,
-                'hidden_dim': HIDDEN_DIM,
-                'batch_size': BATCH_SIZE,
-                'learning_rate': LEARNING_RATE
+                'embedding_dim': args.embedding_dim,
+                'context_size': args.context_size,
+                'hidden_dim': args.hidden_dim,
+                'batch_size': args.batch_size,
+                'learning_rate': args.learning_rate
             }, args.model_save_path)
             print(f"Validation loss improved. Model saved to {args.model_save_path}")
         else:
