@@ -10,6 +10,9 @@ from evaluate_model import main as evaluate_main
 class TestEvaluateModel(unittest.TestCase):
 
     @patch('evaluate_model.torch.load')
+    """
+    Contains test cases for evaluating the model loading and evaluation logic in the evaluate_model module.
+    """
     def test_load_model(self, mock_torch_load):
         mock_checkpoint = {
             'word_sense_to_index': {'sense1': 0, 'sense2': 1},
@@ -30,9 +33,18 @@ class TestEvaluateModel(unittest.TestCase):
         self.assertEqual(compute_penalty('1.2.3', '1.2.4'), 0.5)
         self.assertEqual(compute_penalty('1.2.3', '1.3.4'), 1.0)
         self.assertEqual(compute_penalty('1.2.3.4', '1.2.3.5'), 0.125)
+"""
+This file contains unit tests for the evaluate_model.py module, using the unittest framework and mocking with unittest.mock.
+"""
+        self.assertEqual(compute_penalty('1.2.3', '1.2.4'), 0.5)
+        self.assertEqual(compute_penalty('1.2.3', '1.3.4'), 1.0)
+        self.assertEqual(compute_penalty('1.2.3.4', '1.2.3.5'), 0.125)
         self.assertEqual(compute_penalty('1.2.3', '2.3.4'), 1.0)
 
     @patch('evaluate_model.sqlite3.connect')
+        """
+        Test the compute_penalty function's correctness in calculating penalties based on the similarity of correct and predicted paths.
+        """
     @patch('evaluate_model.torch.load')
     def test_main_evaluation_logic(self, mock_torch_load, mock_sqlite_connect):
         mock_checkpoint = {
@@ -60,3 +72,6 @@ class TestEvaluateModel(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+        """
+        Ensure the main evaluation logic correctly processes input data, makes predictions, and updates the database with results.
+        """
