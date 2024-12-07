@@ -34,12 +34,6 @@ def load_model(model_file):
     checkpoint = torch.load(model_file, map_location='cpu')
     word_sense_to_index = checkpoint['word_sense_to_index']
     index_to_word_sense = {idx: sense for sense, idx in word_sense_to_index.items()}
-"""
-evaluate_model.py
-
-This script evaluates a neural network model on a given dataset and stores the results in a SQLite database.
-It loads a pre-trained model, processes input data, makes predictions, computes penalties, and records the evaluation results.
-"""
     vocab_size = len(word_sense_to_index)
     
     model = SimpleFFNN(
