@@ -8,11 +8,6 @@ import time
 from typing import Dict, Tuple, Any
 import os
 
-# Hyperparameters for model structure
-# These should match those used during training
-EMBEDDING_DIM = 128
-CONTEXT_SIZE = 16
-HIDDEN_DIM = 256
 
 class SimpleFFNN(nn.Module):
     def __init__(self, vocab_size, embedding_dim, context_size, hidden_dim, output_dim):
@@ -44,10 +39,10 @@ It loads a pre-trained model, processes input data, makes predictions, computes 
     vocab_size = len(word_sense_to_index)
     
     model = SimpleFFNN(
-        vocab_size=vocab_size,
-        embedding_dim=EMBEDDING_DIM,
-        context_size=CONTEXT_SIZE,
-        hidden_dim=HIDDEN_DIM,
+        vocab_size = vocab_size,
+        embedding_dim = checkpoint['embedding_dim'],
+        context_size = checkpoint['context_size'],
+        hidden_dim = checkpoint['hidden_dim'],
         output_dim=vocab_size
     )
     model.load_state_dict(checkpoint['model_state_dict'])
