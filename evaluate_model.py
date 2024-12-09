@@ -31,6 +31,7 @@ def load_model(model_file):
     word_sense_to_index = checkpoint['word_sense_to_index']
     index_to_word_sense = {idx: sense for sense, idx in word_sense_to_index.items()}
     vocab_size = len(word_sense_to_index)
+    context_size = checkpoint['context_size']
     
     model = SimpleFFNN(
         vocab_size = vocab_size,
@@ -45,7 +46,7 @@ def load_model(model_file):
     # Count parameters
     model_parameter_count = sum(p.numel() for p in model.parameters())
     
-    return model, word_sense_to_index, index_to_word_sense, vocab_size, model_parameter_count
+    return model, word_sense_to_index, index_to_word_sense, vocab_size, model_parameter_count, context_size
     """
     Loads a neural network model from a checkpoint file.
 
@@ -97,14 +98,14 @@ def main() -> None:
     args = parser.parse_args()
     
     # Load model and vocabulary
-    model, word_sense_to_index, index_to_word_sense, vocab_size, model_parameter_count = load_model(args.model)
+    model, word_sense_to_index, index_to_word_sense, vocab_size, model_parameter_count, context_size = load_model(args.model)
     
     # Connect to input DB and fetch data
     input_conn = sqlite3.connect(args.input_db)
     input_cursor = input_conn.cursor()
     # We assume the table schema includes columns: id, targetword, context1...context16
     query = f"SELECT id, targetword"
-    for i in range(1, CONTEXT_SIZE+1):
+    for i in range(1, context_size+1):
         query += f", context{i}"
     query += f" FROM {args.table}"
     
