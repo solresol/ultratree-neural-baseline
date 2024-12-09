@@ -140,13 +140,6 @@ def main() -> None:
         )
     """)
     output_cursor.execute("""
-    # Create tables if not exist
-    """
-    Database Operations:
-
-    - Connects to the input SQLite database to fetch evaluation data.
-    - Prepares the output SQLite database by creating necessary tables if they do not exist.
-    """
         CREATE TABLE IF NOT EXISTS inferences (
             id INTEGER PRIMARY KEY,
             validation_run_id integer references evaluation_runs(evaluation_run_id),
@@ -161,14 +154,9 @@ def main() -> None:
     # Insert a run record (partial)
     # We'll update number_of_data_points and total_loss at the end
     output_cursor.execute("""
-    # Insert a run record (partial)
-    """
-    - Inserts a new record into the evaluation_runs table to log the start of an evaluation run.
-    - Commits the transaction to save the changes.
-    """
         INSERT INTO evaluation_runs(description, model_file, model_parameter_count, context_length, evaluation_datafile, evaluation_table)
         VALUES (?, ?, ?, ?, ?, ?)
-    """, (args.description, os.path.abspath(args.model), model_parameter_count, CONTEXT_SIZE, os.path.abspath(args.input_db), args.table))
+    """, (args.description, os.path.abspath(args.model), model_parameter_count, context_size, os.path.abspath(args.input_db), args.table))
     
     evaluation_run_id = output_cursor.lastrowid
     output_conn.commit()
@@ -200,11 +188,6 @@ def main() -> None:
             
             loss = compute_penalty(correct_path, predicted_path)
             total_loss += loss
-    # Evaluate
-    """
-    - Iterates through the fetched data rows, makes predictions using the model, computes penalties,
-      and inserts the results into the inferences table.
-    """
             count += 1
             
             # Insert into inferences
