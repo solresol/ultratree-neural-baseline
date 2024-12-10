@@ -26,6 +26,9 @@ all: $(COMPRESSED_SENSE_ANNOTATED_TRAINING_DATA) \
 	echo "All tasks complete."
 
 # Recreate SQLite databases from SQL dumps
+$(TRAINING_SQL): $(COMPRESSED_SENSE_ANNOTATED_TRAINING_DATA)
+	gunzip -c $< > $@
+
 $(TRAINING_DB): $(TRAINING_SQL)
 	sqlite3 $@ < $<
 
