@@ -5,45 +5,53 @@ COMPRESSED_SENSE_ANNOTATED_TRAINING_DECODINGS=ultratree-sense-annotated-training
 COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DATA=ultratree-sense-annotated-heldout-data.sql.gz
 COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DECODINGS=ultratree-sense-annotated-training-heldout.sql.gz
 
-.PHONY: all
+TRAINING_SQL=tiny_training_data.sql
+VALIDATION_SQL=validation_training_data.sql
+TRAINING_DB=tiny.sqlite
+VALIDATION_DB=validation.sqlite
 
-all: $(COMPRESSED_SENSE_ANNOTATED_TRAINING_DATA) $(COMPRESSED_SENSE_ANNOTATED_TRAINING_DECODINGS) $(COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DATA) $(COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DECODINGS)
-	echo Done
+EMBEDDING_DIMS=$(shell seq 2 2 128)
+HIDDEN_DIMS=$(shell seq 4 4 256)
+MODELS=$(foreach emb,$(EMBEDDING_DIMS),$(foreach hid,$(HIDDEN_DIMS),model_$(emb)_$(hid).pt))
 
-# Explicit rules for SQL file generation
-training_data_training.sql: $(SENSE_ANNOTATED_PREPPED_TRAINING_DATA)
-	@if [ ! -f $@ ]; then \
-		echo "Creating $@..."; \
-		sqlite3 $(SENSE_ANNOTATED_PREPPED_TRAINING_DATA) ".dump training_data" > $@; \
-	fi
+.PHONY: all recreate-dbs train-models evaluate-models
 
-decodings_training.sql: $(SENSE_ANNOTATED_PREPPED_TRAINING_DATA)
-	@if [ ! -f $@ ]; then \
-		echo "Creating $@..."; \
-		sqlite3 $(SENSE_ANNOTATED_PREPPED_TRAINING_DATA) ".dump decodings" > $@; \
-	fi
+all: $(COMPRESSED_SENSE_ANNOTATED_TRAINING_DATA) \
+     $(COMPRESSED_SENSE_ANNOTATED_TRAINING_DECODINGS) \
+     $(COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DATA) \
+     $(COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DECODINGS) \
+     recreate-dbs \
+     train-models \
+     evaluate-models
+	echo "All tasks complete."
 
-training_data_heldout.sql: $(SENSE_ANNOTATED_PREPPED_HELD_OUT_DATA)
-	@if [ ! -f $@ ]; then \
-		echo "Creating $@..."; \
-		sqlite3 $(SENSE_ANNOTATED_PREPPED_HELD_OUT_DATA) ".dump training_data" > $@; \
-	fi
+# Recreate SQLite databases from SQL dumps
+$(TRAINING_DB): $(TRAINING_SQL)
+	sqlite3 $@ < $<
 
-decodings_heldout.sql: $(SENSE_ANNOTATED_PREPPED_HELD_OUT_DATA)
-	@if [ ! -f $@ ]; then \
-		echo "Creating $@..."; \
-		sqlite3 $(SENSE_ANNOTATED_PREPPED_HELD_OUT_DATA) ".dump decodings" > $@; \
-	fi
+$(VALIDATION_DB): $(VALIDATION_SQL)
+	sqlite3 $@ < $<
 
-# Rules for creating compressed files
-$(COMPRESSED_SENSE_ANNOTATED_TRAINING_DATA): training_data_training.sql
-	gzip -9 < $< > $@
+recreate-dbs: $(TRAINING_DB) $(VALIDATION_DB)
+	echo "Databases recreated."
 
-$(COMPRESSED_SENSE_ANNOTATED_TRAINING_DECODINGS): decodings_training.sql
-	gzip -9 < $< > $@
+# Train models with different embedding and hidden dimensions
+train-models: $(MODELS)
+	echo "Model training complete."
 
-$(COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DATA): training_data_heldout.sql
-	gzip -9 < $< > $@
+model_%.pt: $(TRAINING_DB)
+	@emb=$$(echo $* | cut -d_ -f1); \
+	hid=$$(echo $* | cut -d_ -f2); \
+	echo "Training model with embedding_dim=$$emb hidden_dim=$$hid"; \
+	ffnn-senses.py --db-path $< --model-save-path $@ --embedding-dim $$emb --hidden-dim $$hid
 
-$(COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DECODINGS): decodings_heldout.sql
-	gzip -9 < $< > $@
+# Evaluate all trained models
+evaluate-models: $(foreach emb,$(EMBEDDING_DIMS),$(foreach hid,$(HIDDEN_DIMS),evaluation_$(emb)_$(hid).out))
+	echo "Model evaluation complete."
+
+evaluation_%.out: model_%.pt $(VALIDATION_DB)
+	@emb=$$(echo $* | cut -d_ -f1); \
+	hid=$$(echo $* | cut -d_ -f2); \
+	desc="Model with embedding_dim=$$emb and hidden_dim=$$hid"; \
+	echo "Evaluating $$desc"; \
+	evaluate_model.py --model $< --input-db $(VALIDATION_DB) --output-db evaluation_$*.sqlite --description "$$desc" > $@
