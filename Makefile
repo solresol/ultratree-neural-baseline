@@ -10,25 +10,40 @@ COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DECODINGS=ultratree-sense-annotated-training
 all: $(COMPRESSED_SENSE_ANNOTATED_TRAINING_DATA) $(COMPRESSED_SENSE_ANNOTATED_TRAINING_DECODINGS) $(COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DATA) $(COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DECODINGS)
 	echo Done
 
+# Explicit rules for SQL file generation
+training_data_training.sql: $(SENSE_ANNOTATED_PREPPED_TRAINING_DATA)
+	@if [ ! -f $@ ]; then \
+		echo "Creating $@..."; \
+		sqlite3 $(SENSE_ANNOTATED_PREPPED_TRAINING_DATA) ".dump training_data" > $@; \
+	fi
 
-$(COMPRESSED_SENSE_ANNOTATED_TRAINING_DATA): $(SENSE_ANNOTATED_PREPPED_TRAINING_DATA)
-	sqlite3 $(SENSE_ANNOTATED_PREPPED_TRAINING_DATA) ".dump training_data" > .csatd.sqlite
-	gzip -9 .csatd.sqlite
-	mv .csatd.sqlite.gz $(COMPRESSED_SENSE_ANNOTATED_TRAINING_DATA)
+decodings_training.sql: $(SENSE_ANNOTATED_PREPPED_TRAINING_DATA)
+	@if [ ! -f $@ ]; then \
+		echo "Creating $@..."; \
+		sqlite3 $(SENSE_ANNOTATED_PREPPED_TRAINING_DATA) ".dump decodings" > $@; \
+	fi
 
-$(COMPRESSED_SENSE_ANNOTATED_TRAINING_DECODINGS): $(SENSE_ANNOTATED_PREPPED_TRAINING_DATA)
-	sqlite3 $(SENSE_ANNOTATED_PREPPED_TRAINING_DATA) ".dump decodings" > .csatc.sqlite
-	gzip -9 .csatc.sqlite
-	mv .csatc.sqlite.gz $(COMPRESSED_SENSE_ANNOTATED_TRAINING_DECODINGS)
+training_data_heldout.sql: $(SENSE_ANNOTATED_PREPPED_HELD_OUT_DATA)
+	@if [ ! -f $@ ]; then \
+		echo "Creating $@..."; \
+		sqlite3 $(SENSE_ANNOTATED_PREPPED_HELD_OUT_DATA) ".dump training_data" > $@; \
+	fi
 
+decodings_heldout.sql: $(SENSE_ANNOTATED_PREPPED_HELD_OUT_DATA)
+	@if [ ! -f $@ ]; then \
+		echo "Creating $@..."; \
+		sqlite3 $(SENSE_ANNOTATED_PREPPED_HELD_OUT_DATA) ".dump decodings" > $@; \
+	fi
 
+# Rules for creating compressed files
+$(COMPRESSED_SENSE_ANNOTATED_TRAINING_DATA): training_data_training.sql
+	gzip -9 < $< > $@
 
-$(COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DATA): $(SENSE_ANNOTATED_PREPPED_HELD_OUT_DATA)
-	sqlite3 $(SENSE_ANNOTATED_PREPPED_HELD_OUT_DATA) ".dump training_data" > .csahod.sqlite
-	gzip -9 .csahod.sqlite
-	mv .csahod.sqlite.gz $(COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DATA)
+$(COMPRESSED_SENSE_ANNOTATED_TRAINING_DECODINGS): decodings_training.sql
+	gzip -9 < $< > $@
 
-$(COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DECODINGS): $(SENSE_ANNOTATED_PREPPED_HELD_OUT_DATA)
-	sqlite3 $(SENSE_ANNOTATED_PREPPED_HELD_OUT_DATA) ".dump decodings" > .csahoc.sqlite
-	gzip -9 .csahoc.sqlite
-	mv .csahoc.sqlite.gz $(COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DECODINGS)
+$(COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DATA): training_data_heldout.sql
+	gzip -9 < $< > $@
+
+$(COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DECODINGS): decodings_heldout.sql
+	gzip -9 < $< > $@
