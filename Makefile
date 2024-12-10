@@ -4,6 +4,7 @@ COMPRESSED_SENSE_ANNOTATED_TRAINING_DATA=ultratree-sense-annotated-training-data
 COMPRESSED_SENSE_ANNOTATED_TRAINING_DECODINGS=ultratree-sense-annotated-training-decode.sql.gz
 COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DATA=ultratree-sense-annotated-heldout-data.sql.gz
 COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DECODINGS=ultratree-sense-annotated-training-heldout.sql.gz
+COMPRESSED_SENSE_ANNOTATED_VALIDATION_DATA=ultratree-sense-annotated-validation-data.sql.gz
 
 TRAINING_SQL=tiny_training_data.sql
 VALIDATION_SQL=validation_training_data.sql
@@ -22,11 +23,15 @@ all: $(COMPRESSED_SENSE_ANNOTATED_TRAINING_DATA) \
      $(COMPRESSED_SENSE_ANNOTATED_HELD_OUT_DECODINGS) \
      recreate-dbs \
      train-models \
+     $(COMPRESSED_SENSE_ANNOTATED_VALIDATION_DATA) \
      evaluate-models
 	echo "All tasks complete."
 
 # Recreate SQLite databases from SQL dumps
 $(TRAINING_SQL): $(COMPRESSED_SENSE_ANNOTATED_TRAINING_DATA)
+	gunzip -c $< > $@
+
+$(VALIDATION_SQL): $(COMPRESSED_SENSE_ANNOTATED_VALIDATION_DATA)
 	gunzip -c $< > $@
 
 $(TRAINING_DB): $(TRAINING_SQL)
