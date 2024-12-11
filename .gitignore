@@ -162,3 +162,5 @@ cython_debug/
 #.idea/
 *~
 model.pt
+*.pt
+*.out
