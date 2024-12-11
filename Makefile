@@ -64,45 +64,45 @@ evaluate-models: eval_sense_annotated_emb2_hidden4.out eval_sense_annotated_emb4
 	echo "Model evaluations complete."
 
 eval_sense_annotated_emb2_hidden4.out: sense_annotated_model_emb2_hidden4.pt $(SENSE_ANNOTATED_TEST_DATAFRAME)
-	evaluate_model.py --model sense_annotated_model_emb2_hidden4.pt --input-db $(SENSE_ANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Sense Annotated, Embed=2, Hidden=4" > $@
+	python3 evaluate_model.py --model sense_annotated_model_emb2_hidden4.pt --input-db $(SENSE_ANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Sense Annotated, Embed=2, Hidden=4" > $@
 
 eval_sense_annotated_emb4_hidden8.out: sense_annotated_model_emb4_hidden8.pt $(SENSE_ANNOTATED_TEST_DATAFRAME)
-	evaluate_model.py --model sense_annotated_model_emb4_hidden8.pt --input-db $(SENSE_ANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Sense Annotated, Embed=4, Hidden=8" > $@
+	python3 evaluate_model.py --model sense_annotated_model_emb4_hidden8.pt --input-db $(SENSE_ANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Sense Annotated, Embed=4, Hidden=8" > $@
 
 eval_sense_annotated_emb8_hidden16.out: sense_annotated_model_emb8_hidden16.pt $(SENSE_ANNOTATED_TEST_DATAFRAME)
-	evaluate_model.py --model sense_annotated_model_emb8_hidden16.pt --input-db $(SENSE_ANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Sense Annotated, Embed=8, Hidden=16" > $@
+	python3 evaluate_model.py --model sense_annotated_model_emb8_hidden16.pt --input-db $(SENSE_ANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Sense Annotated, Embed=8, Hidden=16" > $@
 
 eval_sense_annotated_emb16_hidden32.out: sense_annotated_model_emb16_hidden32.pt $(SENSE_ANNOTATED_TEST_DATAFRAME)
-	evaluate_model.py --model sense_annotated_model_emb16_hidden32.pt --input-db $(SENSE_ANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Sense Annotated, Embed=16, Hidden=32" > $@
+	python3 evaluate_model.py --model sense_annotated_model_emb16_hidden32.pt --input-db $(SENSE_ANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Sense Annotated, Embed=16, Hidden=32" > $@
 
 eval_sense_annotated_emb32_hidden64.out: sense_annotated_model_emb32_hidden64.pt $(SENSE_ANNOTATED_TEST_DATAFRAME)
-	evaluate_model.py --model sense_annotated_model_emb32_hidden64.pt --input-db $(SENSE_ANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Sense Annotated, Embed=32, Hidden=64" > $@
+	python3 evaluate_model.py --model sense_annotated_model_emb32_hidden64.pt --input-db $(SENSE_ANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Sense Annotated, Embed=32, Hidden=64" > $@
 
 eval_sense_annotated_emb64_hidden128.out: sense_annotated_model_emb64_hidden128.pt $(SENSE_ANNOTATED_TEST_DATAFRAME)
-	evaluate_model.py --model sense_annotated_model_emb64_hidden128.pt --input-db $(SENSE_ANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Sense Annotated, Embed=64, Hidden=128" > $@
+	python3 evaluate_model.py --model sense_annotated_model_emb64_hidden128.pt --input-db $(SENSE_ANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Sense Annotated, Embed=64, Hidden=128" > $@
 
 eval_sense_annotated_emb128_hidden256.out: sense_annotated_model_emb128_hidden256.pt $(SENSE_ANNOTATED_TEST_DATAFRAME)
-	evaluate_model.py --model sense_annotated_model_emb128_hidden256.pt --input-db $(SENSE_ANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Sense Annotated, Embed=128, Hidden=256" > $@
+	python3 evaluate_model.py --model sense_annotated_model_emb128_hidden256.pt --input-db $(SENSE_ANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Sense Annotated, Embed=128, Hidden=256" > $@
 
 
 
 eval_unannotated_emb2_hidden4.out: unannotated_model_emb2_hidden4.pt $(UNANNOTATED_TEST_DATAFRAME)
-	evaluate_model.py --model unannotated_model_emb2_hidden4.pt --input-db $(UNANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Unannotated, Embed=2, Hidden=4" > $@
+	python3 evaluate_model.py --model unannotated_model_emb2_hidden4.pt --input-db $(UNANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Unannotated, Embed=2, Hidden=4" > $@
 
 eval_unannotated_emb4_hidden8.out: unannotated_model_emb4_hidden8.pt $(UNANNOTATED_TEST_DATAFRAME)
-	evaluate_model.py --model unannotated_model_emb4_hidden8.pt --input-db $(UNANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Unannotated, Embed=4, Hidden=8" > $@
+	python3 evaluate_model.py --model unannotated_model_emb4_hidden8.pt --input-db $(UNANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Unannotated, Embed=4, Hidden=8" > $@
 
 eval_unannotated_emb8_hidden16.out: unannotated_model_emb8_hidden16.pt $(UNANNOTATED_TEST_DATAFRAME)
-	evaluate_model.py --model unannotated_model_emb8_hidden16.pt --input-db $(UNANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Unannotated, Embed=8, Hidden=16" > $@
+	python3 evaluate_model.py --model unannotated_model_emb8_hidden16.pt --input-db $(UNANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Unannotated, Embed=8, Hidden=16" > $@
 
 eval_unannotated_emb16_hidden32.out: unannotated_model_emb16_hidden32.pt $(UNANNOTATED_TEST_DATAFRAME)
-	evaluate_model.py --model unannotated_model_emb16_hidden32.pt --input-db $(UNANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Unannotated, Embed=16, Hidden=32" > $@
+	python3 evaluate_model.py --model unannotated_model_emb16_hidden32.pt --input-db $(UNANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Unannotated, Embed=16, Hidden=32" > $@
 
 eval_unannotated_emb32_hidden64.out: unannotated_model_emb32_hidden64.pt $(UNANNOTATED_TEST_DATAFRAME)
-	evaluate_model.py --model unannotated_model_emb32_hidden64.pt --input-db $(UNANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Unannotated, Embed=32, Hidden=64" > $@
+	python3 evaluate_model.py --model unannotated_model_emb32_hidden64.pt --input-db $(UNANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Unannotated, Embed=32, Hidden=64" > $@
 
 eval_unannotated_emb64_hidden128.out: unannotated_model_emb64_hidden128.pt $(UNANNOTATED_TEST_DATAFRAME)
-	evaluate_model.py --model unannotated_model_emb64_hidden128.pt --input-db $(UNANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Unannotated, Embed=64, Hidden=128" > $@
+	python3 evaluate_model.py --model unannotated_model_emb64_hidden128.pt --input-db $(UNANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Unannotated, Embed=64, Hidden=128" > $@
 
 eval_unannotated_emb128_hidden256.out: unannotated_model_emb128_hidden256.pt $(UNANNOTATED_TEST_DATAFRAME)
-	evaluate_model.py --model unannotated_model_emb128_hidden256.pt --input-db $(UNANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Unannotated, Embed=128, Hidden=256" > $@
+	python3 evaluate_model.py --model unannotated_model_emb128_hidden256.pt --input-db $(UNANNOTATED_TEST_DATAFRAME) --output-db eval_$*.out --description "Unannotated, Embed=128, Hidden=256" > $@
