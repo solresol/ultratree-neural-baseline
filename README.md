@@ -35,3 +35,12 @@ When it finishes, run `evaluate_model.py` with the following arguments:
 
 -- `--description` (a description of what this run was, e.g. this might include the embedding dimension and hidden layer size if you specified these)
 
+# Experiment results
+
+The goal is to compare the results of different models. `summarise_evaluations.py` does this, e.g.
+
+```python
+python3 summarise_evaluations.py --output ../ultratree-results/neural-results.csv *.out
+```
+
+Typing `make all` should do this.
