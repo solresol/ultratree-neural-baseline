@@ -5,7 +5,7 @@ import sqlite3
 import torch
 import torch.nn as nn
 import time
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Any
 import os
 
 
@@ -25,7 +25,7 @@ class SimpleFFNN(nn.Module):
         out = self.fc2(out)
         return out
 
-def load_model(model_file):
+def load_model(model_file: str) -> Tuple[SimpleFFNN, Dict[str, int], Dict[int, str], int, int, int]:
     # Load the checkpoint
     checkpoint = torch.load(model_file, map_location='cpu', weights_only=False)
     word_sense_to_index = checkpoint['word_sense_to_index']
