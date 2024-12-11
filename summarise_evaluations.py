@@ -3,7 +3,7 @@ import csv
 import sqlite3
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description='Summarize evaluation results from SQLite databases into a CSV file.')
     parser.add_argument('--output-csv', type=str, required=True, help='Path to the output CSV file.')
     parser.add_argument('databases', nargs='+', help='SQLite database files to process.')
