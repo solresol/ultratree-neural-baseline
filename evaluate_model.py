@@ -27,7 +27,7 @@ class SimpleFFNN(nn.Module):
 
 def load_model(model_file):
     # Load the checkpoint
-    checkpoint = torch.load(model_file, map_location='cpu')
+    checkpoint = torch.load(model_file, map_location='cpu', weights_only=False)
     word_sense_to_index = checkpoint['word_sense_to_index']
     index_to_word_sense = {idx: sense for sense, idx in word_sense_to_index.items()}
     vocab_size = len(word_sense_to_index)
