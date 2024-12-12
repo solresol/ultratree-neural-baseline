@@ -5,12 +5,12 @@ import sqlite3
 import torch
 import torch.nn as nn
 import time
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 import os
 import sys
 
 class SimpleFFNN(nn.Module):
-    def __init__(self, vocab_size, embedding_dim, context_size, hidden_dim, output_dim):
+    def __init__(self, vocab_size: int, embedding_dim: int, context_size: int, hidden_dim: int, output_dim: int) -> None:
         super(SimpleFFNN, self).__init__()
         self.embedding = nn.Embedding(num_embeddings=vocab_size, embedding_dim=embedding_dim)
         self.fc1 = nn.Linear(in_features=context_size * embedding_dim, out_features=hidden_dim)
@@ -25,7 +25,7 @@ class SimpleFFNN(nn.Module):
         out = self.fc2(out)
         return out
 
-def load_model(model_file):
+def load_model(model_file: str) -> Tuple[SimpleFFNN, Dict[str, int], Dict[int, str], int, int, int]:
     """
     Loads a neural network model from a checkpoint file.
 
