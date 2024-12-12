@@ -15,7 +15,7 @@ class SimpleFFNN(nn.Module):
         self.embedding = nn.Embedding(num_embeddings=vocab_size, embedding_dim=embedding_dim)
         self.fc1 = nn.Linear(in_features=context_size * embedding_dim, out_features=hidden_dim)
         self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(in_features=hidden_dim, out_features=output_dim)
+        self.fc2 = nn.Linear(in_features=hidden_dim, out_features=output_dim + 1)  # Output dim includes OOV token
         
     def forward(self, context_words):
         embeddings = self.embedding(context_words)  # (batch_size, context_size, embedding_dim)
@@ -41,8 +41,13 @@ def load_model(model_file: str) -> Tuple[SimpleFFNN, Dict[str, int], Dict[int, s
     """
     # Load the checkpoint
     checkpoint = torch.load(model_file, map_location='cpu', weights_only=False)
-    word_sense_to_index = checkpoint['word_sense_to_index']
-    index_to_word_sense = {idx: sense for sense, idx in word_sense_to_index.items()}
+    word_sense_to_index = checkpoint.get('word_sense_to_index', {})
+    # Ensure OOV token entry exists in word_sense_to_index
+    word_sense_to_index['OOV'] = word_sense_to_index.get('OOV', max(word_sense_to_index.values(), default=-1) + 1)
+    # Adjust index_to_word_sense mapping for OOV token
+    index_to_word_sense = {idx: sense for sense, idx in word_sense_to_index.items() if sense != 'OOV'}
+    index_to_word_sense[word_sense_to_index['OOV']] = 'OOV'
+    # Adjust vocab_size to account for OOV token entry
     vocab_size = len(word_sense_to_index)
     context_size = checkpoint['context_size']
     
@@ -51,7 +56,7 @@ def load_model(model_file: str) -> Tuple[SimpleFFNN, Dict[str, int], Dict[int, s
         embedding_dim = checkpoint['embedding_dim'],
         context_size = checkpoint['context_size'],
         hidden_dim = checkpoint['hidden_dim'],
-        output_dim=vocab_size
+        output_dim=vocab_size + 1  # Output dim includes OOV token
     )
     model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
@@ -174,7 +179,8 @@ def main() -> None:
             context_paths = r[2:]
             
             # Define a constant for out-of-vocabulary terms
-            OOV_INDEX = -1
+            # Use the index assigned to the OOV token
+            OOV_INDEX = word_sense_to_index['OOV']
             # Map context words to indices, using OOV_INDEX for out-of-vocabulary terms
             context_indices = [word_sense_to_index.get(cw, OOV_INDEX) for cw in context_paths]
             
