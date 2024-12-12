@@ -56,7 +56,7 @@ class SimpleFFNN(nn.Module):
         # The input dimension is context_size * embedding_dim since embeddings are concatenated
         self.fc1 = nn.Linear(in_features=context_size * embedding_dim, out_features=hidden_dim)
         self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(in_features=hidden_dim, out_features=output_dim)
+        self.fc2 = nn.Linear(in_features=hidden_dim, out_features=output_dim + 1)  # Output dim includes OOV token
         
     def forward(self, context_words):
         """
@@ -115,6 +115,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description='Train a simple FFNN on word sense data.')
     parser.add_argument('--db-path', type=str, required=True, help='Path to the SQLite database.')
     parser.add_argument('--table-name', type=str, default="training_data", help='Name of the table to read from.')
+    # Ensure OOV token entry exists in word_sense_to_index
+    word_sense_to_index['OOV'] = word_sense_to_index.get('OOV', max(word_sense_to_index.values(), default=-1) + 1)
+    index_to_word_sense[word_sense_to_index['OOV']] = 'OOV'
+    vocab_size = len(word_sense_to_index)
     parser.add_argument('--model-save-path', type=str, default='model.pt', help='Path to save or load the model.')
     parser.add_argument('--resume', action='store_true', help='Resume training from saved model.')
     parser.add_argument('--embedding-dim', type=int, default=EMBEDDING_DIM, help='Dimension of the embeddings.')
@@ -182,7 +186,10 @@ def main() -> None:
         total_loss = 0
         for batch_idx, (context_batch, target_batch) in enumerate(dataloader):
             optimizer.zero_grad()
-            outputs = model(context_batch)
+            # Map context words to indices, using OOV_INDEX for out-of-vocabulary terms
+            context_indices = [word_sense_to_index.get(cw, word_sense_to_index['OOV']) for cw in context_batch]
+            context_tensor = torch.tensor(context_indices, dtype=torch.long)
+            outputs = model(context_tensor)
             loss = criterion(outputs, target_batch)
             loss.backward()
             optimizer.step()
