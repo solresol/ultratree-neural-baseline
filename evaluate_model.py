@@ -26,6 +26,19 @@ class SimpleFFNN(nn.Module):
         return out
 
 def load_model(model_file):
+    """
+    Loads a neural network model from a checkpoint file.
+
+    Args:
+        model_file (str): Path to the model checkpoint file.
+
+    Returns:
+        model (SimpleFFNN): The loaded neural network model.
+        word_sense_to_index (dict): Mapping from word senses to their indices.
+        index_to_word_sense (dict): Mapping from indices to word senses.
+        vocab_size (int): Size of the vocabulary.
+        model_parameter_count (int): Total number of parameters in the model.
+    """
     # Load the checkpoint
     checkpoint = torch.load(model_file, map_location='cpu', weights_only=False)
     word_sense_to_index = checkpoint['word_sense_to_index']
@@ -47,21 +60,18 @@ def load_model(model_file):
     model_parameter_count = sum(p.numel() for p in model.parameters())
     
     return model, word_sense_to_index, index_to_word_sense, vocab_size, model_parameter_count, context_size
-    """
-    Loads a neural network model from a checkpoint file.
-
-    Args:
-        model_file (str): Path to the model checkpoint file.
-
-    Returns:
-        model (SimpleFFNN): The loaded neural network model.
-        word_sense_to_index (dict): Mapping from word senses to their indices.
-        index_to_word_sense (dict): Mapping from indices to word senses.
-        vocab_size (int): Size of the vocabulary.
-        model_parameter_count (int): Total number of parameters in the model.
-    """
 
 def compute_penalty(correct_path, predicted_path):
+    """
+    Computes the penalty based on the similarity between the correct and predicted paths.
+
+    Args:
+        correct_path (str): The correct path as a string.
+        predicted_path (str): The predicted path as a string.
+
+    Returns:
+        float: The penalty value, where 0.0 indicates an exact match and higher values indicate greater dissimilarity.
+    """
     if correct_path == predicted_path:
         # Exact match
         return 0.0
@@ -80,14 +90,10 @@ def compute_penalty(correct_path, predicted_path):
 
 def main() -> None:
     """
-    Computes the penalty based on the similarity between the correct and predicted paths.
+    Main function to evaluate the model.
 
-    Args:
-        correct_path (str): The correct path as a string.
-        predicted_path (str): The predicted path as a string.
-
-    Returns:
-        float: The penalty value, where 0.0 indicates an exact match and higher values indicate greater dissimilarity.
+    This function parses command-line arguments, loads the model, connects to the input and output databases,
+    fetches evaluation data, performs predictions, computes penalties, and stores the results in the database.
     """
     parser = argparse.ArgumentParser(description='Evaluate a model on dataset and write inferences.')
     parser.add_argument('--model', type=str, required=True, help='Path to the model file (checkpoint).')
@@ -116,12 +122,6 @@ def main() -> None:
     # Prepare output DB
     output_conn = sqlite3.connect(args.output_db)
     output_cursor = output_conn.cursor()
-    """
-    Main function to evaluate the model.
-
-    This function parses command-line arguments, loads the model, connects to the input and output databases,
-    fetches evaluation data, performs predictions, computes penalties, and stores the results in the database.
-    """
     
     # Create tables if not exist
     output_cursor.execute("""
@@ -213,8 +213,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-    # Update evaluation_runs with final info
-    """
-    - Updates the evaluation_runs table with the final number of data points processed and the total loss.
-    - Commits the transaction and closes the database connection.
-    """
