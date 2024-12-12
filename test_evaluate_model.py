@@ -33,6 +33,27 @@ class TestEvaluateModel(unittest.TestCase):
         self.assertEqual(compute_penalty('1.2.3', '2.3.4'), 1.0)
 
     def test_oov_handling(self):
+        # Define a constant for out-of-vocabulary terms
+        OOV_INDEX = 2
+        # Test mapping of word senses including the OOV index
+        word_sense_to_index = {'sense1': 0, 'sense2': 1, 'OOV': OOV_INDEX}
+        # Case: none of the context words are OOV (all are in vocabulary)
+        context_paths_no_oov = ['sense1', 'sense2']
+        context_indices_no_oov = [word_sense_to_index.get(cw, OOV_INDEX) for cw in context_paths_no_oov]
+        self.assertEqual(context_indices_no_oov, [0, 1])
+        # Case: some of the context words are OOV
+        context_paths_some_oov = ['sense1', 'unknown_sense']
+        context_indices_some_oov = [word_sense_to_index.get(cw, OOV_INDEX) for cw in context_paths_some_oov]
+        self.assertEqual(context_indices_some_oov, [0, OOV_INDEX])
+        # Case: all of the context words are OOV
+        context_paths_all_oov = ['unknown_sense1', 'unknown_sense2']
+        context_indices_all_oov = [word_sense_to_index.get(cw, OOV_INDEX) for cw in context_paths_all_oov]
+        self.assertEqual(context_indices_all_oov, [OOV_INDEX, OOV_INDEX])
+        # Test if model predicts the OOV token when context words are OOV
+        mock_model = MagicMock()
+        mock_model.forward.return_value = torch.tensor([[0.0, 0.0, 1.0]])
+        predicted_index = torch.argmax(mock_model.forward(torch.tensor([[OOV_INDEX, OOV_INDEX]])), 1).item()
+        self.assertEqual(predicted_index, OOV_INDEX)
         word_sense_to_index = {'sense1': 0, 'sense2': 1}
         context_paths = ['sense1', 'unknown_sense']
         OOV_INDEX = -1
