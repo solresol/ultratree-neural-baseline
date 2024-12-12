@@ -7,7 +7,7 @@ import torch.nn as nn
 import time
 from typing import Dict, Tuple
 import os
-
+import sys
 
 class SimpleFFNN(nn.Module):
     def __init__(self, vocab_size, embedding_dim, context_size, hidden_dim, output_dim):
@@ -179,6 +179,7 @@ def main() -> None:
             except KeyError:
                 # If there's a sense not in vocab, skip
                 # (Shouldn't happen if vocab was built consistently.)
+                sys.stderr.write(f"Something went wrong with something in {context_paths}\n")
                 continue
             
             context_tensor = torch.tensor([context_indices], dtype=torch.long)
