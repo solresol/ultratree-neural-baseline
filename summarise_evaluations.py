@@ -11,16 +11,16 @@ def main():
 
     with open(args.output_csv, mode='w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
-        csv_writer.writerow(['embedding_size', 'hidden_layer_size', 'augmentation', 'number_of_data_points', 'total_loss'])
+        csv_writer.writerow(['embedding_size', 'hidden_layer_size', 'augmentation', 'model_parameter_count',  'number_of_data_points', 'total_loss'])
 
         for db_path in args.databases:
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
-            cursor.execute("SELECT description, number_of_data_points, total_loss FROM evaluation_runs;")
+            cursor.execute("SELECT description, model_parameter_count,  number_of_data_points, total_loss FROM evaluation_runs;")
             rows = cursor.fetchall()
 
             for row in rows:
-                description, number_of_data_points, total_loss = row
+                description, model_parameter_count,number_of_data_points, total_loss = row
                 parts = description.split(',')
                 embedding_size = None
                 hidden_layer_size = None
@@ -34,7 +34,7 @@ def main():
                     else:
                         augmentation = part.strip()
 
-                csv_writer.writerow([embedding_size, hidden_layer_size, augmentation, number_of_data_points, total_loss])
+                csv_writer.writerow([embedding_size, hidden_layer_size, augmentation, model_parameter_count, number_of_data_points, total_loss])
 
             conn.close()
 
