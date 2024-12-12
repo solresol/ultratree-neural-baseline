@@ -173,14 +173,10 @@ def main() -> None:
             correct_path = r[1]
             context_paths = r[2:]
             
-            # Map context words to indices
-            try:
-                context_indices = [word_sense_to_index[cw] for cw in context_paths]
-            except KeyError:
-                # If there's a sense not in vocab, skip
-                # (Shouldn't happen if vocab was built consistently.)
-                sys.stderr.write(f"Something went wrong with something in {context_paths}\n")
-                continue
+            # Define a constant for out-of-vocabulary terms
+            OOV_INDEX = -1
+            # Map context words to indices, using OOV_INDEX for out-of-vocabulary terms
+            context_indices = [word_sense_to_index.get(cw, OOV_INDEX) for cw in context_paths]
             
             context_tensor = torch.tensor([context_indices], dtype=torch.long)
             outputs = model(context_tensor)  # (1, vocab_size)
