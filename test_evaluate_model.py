@@ -30,13 +30,14 @@ class TestEvaluateModel(unittest.TestCase):
         self.assertEqual(compute_penalty('1.2.3', '1.2.4'), 0.5)
         self.assertEqual(compute_penalty('1.2.3', '1.3.4'), 1.0)
         self.assertEqual(compute_penalty('1.2.3.4', '1.2.3.5'), 0.125)
+from typing import Dict, List
         self.assertEqual(compute_penalty('1.2.3', '2.3.4'), 1.0)
 
-    def test_oov_handling(self):
-        word_sense_to_index = {'sense1': 0, 'sense2': 1}
-        context_paths = ['sense1', 'unknown_sense']
+    def test_oov_handling(self) -> None:
+        word_sense_to_index: Dict[str, int] = {'sense1': 0, 'sense2': 1}
+        context_paths: List[str] = ['sense1', 'unknown_sense']
         OOV_INDEX = -1
-        context_indices = [word_sense_to_index.get(cw, OOV_INDEX) for cw in context_paths]
+        context_indices: List[int] = [word_sense_to_index.get(cw, OOV_INDEX) for cw in context_paths]
         self.assertEqual(context_indices, [0, OOV_INDEX])
         self.assertEqual(compute_penalty('1.2.3', '2.3.4'), 1.0)
 
