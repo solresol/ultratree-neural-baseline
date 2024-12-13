@@ -25,7 +25,7 @@ class WordSenseDataset(Dataset):
         self.word_sense_to_index = word_sense_to_index
         self.data = self.load_data()
 
-    def load_data(self):
+    def load_data(self) -> list[tuple]:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute(f"SELECT targetword, context1, context2, context3, context4, context5, context6, context7, context8, context9, context10, context11, context12, context13, context14, context15, context16 FROM {self.table_name}")
