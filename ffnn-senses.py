@@ -33,7 +33,7 @@ class WordSenseDataset(Dataset):
         conn.close()
         return rows
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.data)
 
     def __getitem__(self, idx):
