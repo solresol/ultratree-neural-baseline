@@ -9,10 +9,16 @@ from typing import Dict, Tuple, List
 import os
 import sys
 
+OOV_TOKEN = "<OOV>"
+
 class SimpleFFNN(nn.Module):
     def __init__(self, vocab_size: int, embedding_dim: int, context_size: int, hidden_dim: int, output_dim: int) -> None:
         super(SimpleFFNN, self).__init__()
-        self.embedding = nn.Embedding(num_embeddings=vocab_size, embedding_dim=embedding_dim)
+        self.embedding = nn.Embedding(
+            num_embeddings=vocab_size,
+            embedding_dim=embedding_dim,
+            padding_idx=0  # Use index 0 for OOV token
+        )
         self.fc1 = nn.Linear(in_features=context_size * embedding_dim, out_features=hidden_dim)
         self.relu = nn.ReLU()
         self.fc2 = nn.Linear(in_features=hidden_dim, out_features=output_dim)
@@ -47,10 +53,10 @@ def load_model(model_file: str) -> Tuple[SimpleFFNN, Dict[str, int], Dict[int, s
     context_size = checkpoint['context_size']
     
     model = SimpleFFNN(
-        vocab_size = vocab_size,
-        embedding_dim = checkpoint['embedding_dim'],
-        context_size = checkpoint['context_size'],
-        hidden_dim = checkpoint['hidden_dim'],
+        vocab_size=vocab_size,
+        embedding_dim=checkpoint['embedding_dim'],
+        context_size=checkpoint['context_size'],
+        hidden_dim=checkpoint['hidden_dim'],
         output_dim=vocab_size
     )
     model.load_state_dict(checkpoint['model_state_dict'])
@@ -84,8 +90,6 @@ def compute_penalty(correct_path, predicted_path):
         else:
             break
     # If not exact match, penalty = 2^(-prefix_length)
-    # prefix_length could be 0, so penalty = 2^0 = 1 for no match at all.
-    # The problem statement: If correct=1.2.3.4.5 and pred=1.2.3.6.7 then prefix=3, penalty=2^-3=0.125
     return 2**(-prefix_length)
 
 def main() -> None:
@@ -152,7 +156,6 @@ def main() -> None:
     """)
     
     # Insert a run record (partial)
-    # We'll update number_of_data_points and total_loss at the end
     output_cursor.execute("""
         INSERT INTO evaluation_runs(description, model_file, model_parameter_count, context_length, evaluation_datafile, evaluation_table)
         VALUES (?, ?, ?, ?, ?, ?)
@@ -162,7 +165,6 @@ def main() -> None:
     output_conn.commit()
     
     # Evaluate
-    # We'll iterate through rows, make predictions, compute penalty, and store results
     total_loss = 0.0
     count = 0
     
@@ -173,10 +175,8 @@ def main() -> None:
             correct_path = r[1]
             context_paths = r[2:]
             
-            # Define a constant for out-of-vocabulary terms
-            OOV_INDEX = -1
             # Map context words to indices, using OOV_INDEX for out-of-vocabulary terms
-            context_indices = [word_sense_to_index.get(cw, OOV_INDEX) for cw in context_paths]
+            context_indices = [word_sense_to_index.get(cw, 0) for cw in context_paths]
             
             context_tensor = torch.tensor([context_indices], dtype=torch.long)
             outputs = model(context_tensor)  # (1, vocab_size)
@@ -194,8 +194,6 @@ def main() -> None:
             """, (evaluation_run_id, row_id, predicted_path, correct_path, loss))
     
     # Update evaluation_runs with final info
-    # number_of_data_points = count
-    # total_loss = total_loss
     output_cursor.execute("""
         UPDATE evaluation_runs
         SET evaluation_end_time = current_timestamp,
