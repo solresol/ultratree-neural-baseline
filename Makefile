@@ -9,11 +9,11 @@ UNANNOTATED_TRAINING_DATAFRAME=../ultrametric-trees/unannotated-training-datafra
 all: train-models evaluate-models ../ultratree-results/neural-results.csv
 	echo "All tasks complete."
 
-../ultratree-results/neural-results.csv: eval_sense_annotated_emb2_hidden4.out eval_sense_annotated_emb4_hidden8.out eval_sense_annotated_emb8_hidden16.out eval_sense_annotated_emb16_hidden32.out eval_sense_annotated_emb32_hidden64.out eval_sense_annotated_emb64_hidden128.out eval_sense_annotated_emb128_hidden256.out eval_unannotated_emb2_hidden4.out eval_unannotated_emb4_hidden8.out eval_unannotated_emb8_hidden16.out eval_unannotated_emb16_hidden32.out eval_unannotated_emb32_hidden64.out eval_unannotated_emb64_hidden128.out eval_unannotated_emb128_hidden256.out summarise_evaluations.py
-	python3 summarise_evaluations.py --output ../ultratree-results/neural-results.csv eval_sense_annotated_emb2_hidden4.out eval_sense_annotated_emb4_hidden8.out eval_sense_annotated_emb8_hidden16.out eval_sense_annotated_emb16_hidden32.out eval_sense_annotated_emb32_hidden64.out eval_sense_annotated_emb64_hidden128.out eval_sense_annotated_emb128_hidden256.out eval_unannotated_emb2_hidden4.out eval_unannotated_emb4_hidden8.out eval_unannotated_emb8_hidden16.out eval_unannotated_emb16_hidden32.out eval_unannotated_emb32_hidden64.out eval_unannotated_emb64_hidden128.out eval_unannotated_emb128_hidden256.out
+../ultratree-results/neural-results.csv: eval_sense_annotated_emb2_hidden4.out eval_sense_annotated_emb4_hidden8.out eval_sense_annotated_emb8_hidden16.out eval_sense_annotated_emb16_hidden32.out eval_sense_annotated_emb32_hidden64.out eval_sense_annotated_emb64_hidden128.out eval_sense_annotated_emb128_hidden256.out  eval_sense_annotated_emb128_hidden512.out eval_unannotated_emb2_hidden4.out eval_unannotated_emb4_hidden8.out eval_unannotated_emb8_hidden16.out eval_unannotated_emb16_hidden32.out eval_unannotated_emb32_hidden64.out eval_unannotated_emb64_hidden128.out eval_unannotated_emb128_hidden256.out  eval_unannotated_emb128_hidden512.out summarise_evaluations.py
+	python3 summarise_evaluations.py --output ../ultratree-results/neural-results.csv eval_sense_annotated_emb2_hidden4.out eval_sense_annotated_emb4_hidden8.out eval_sense_annotated_emb8_hidden16.out eval_sense_annotated_emb16_hidden32.out eval_sense_annotated_emb32_hidden64.out eval_sense_annotated_emb64_hidden128.out eval_sense_annotated_emb128_hidden256.out eval_sense_annotated_emb128_hidden512.out eval_unannotated_emb2_hidden4.out eval_unannotated_emb4_hidden8.out eval_unannotated_emb8_hidden16.out eval_unannotated_emb16_hidden32.out eval_unannotated_emb32_hidden64.out eval_unannotated_emb64_hidden128.out eval_unannotated_emb128_hidden256.out eval_unannotated_emb128_hidden512.out
 
 # Train models with different embedding and hidden dimensions
-train-models: sense_annotated_model_emb2_hidden4.pt sense_annotated_model_emb4_hidden8.pt sense_annotated_model_emb8_hidden16.pt sense_annotated_model_emb16_hidden32.pt sense_annotated_model_emb32_hidden64.pt sense_annotated_model_emb64_hidden128.pt sense_annotated_model_emb128_hidden256.pt unannotated_model_emb2_hidden4.pt unannotated_model_emb4_hidden8.pt unannotated_model_emb8_hidden16.pt unannotated_model_emb16_hidden32.pt unannotated_model_emb32_hidden64.pt unannotated_model_emb64_hidden128.pt unannotated_model_emb128_hidden256.pt
+train-models: sense_annotated_model_emb2_hidden4.pt sense_annotated_model_emb4_hidden8.pt sense_annotated_model_emb8_hidden16.pt sense_annotated_model_emb16_hidden32.pt sense_annotated_model_emb32_hidden64.pt sense_annotated_model_emb64_hidden128.pt sense_annotated_model_emb128_hidden256.pt sense_annotated_model_emb128_hidden512.pt unannotated_model_emb2_hidden4.pt unannotated_model_emb4_hidden8.pt unannotated_model_emb8_hidden16.pt unannotated_model_emb16_hidden32.pt unannotated_model_emb32_hidden64.pt unannotated_model_emb64_hidden128.pt unannotated_model_emb128_hidden256.pt unannotated_model_emb128_hidden512.pt
 	echo "Model training complete."
 
 sense_annotated_model_emb2_hidden4.pt: $(SENSE_ANNOTATED_TRAINING_DATAFRAME)
@@ -37,6 +37,9 @@ sense_annotated_model_emb64_hidden128.pt: $(SENSE_ANNOTATED_TRAINING_DATAFRAME)
 sense_annotated_model_emb128_hidden256.pt: $(SENSE_ANNOTATED_TRAINING_DATAFRAME)
 	python3 ffnn-senses.py --db-path $< --model-save-path $@ --embedding-dim 128 --hidden-dim 256
 
+sense_annotated_model_emb128_hidden512.pt: $(SENSE_ANNOTATED_TRAINING_DATAFRAME)
+	python3 ffnn-senses.py --db-path $< --model-save-path $@ --embedding-dim 128 --hidden-dim 512
+
 
 unannotated_model_emb2_hidden4.pt: $(UNANNOTATED_TRAINING_DATAFRAME)
 	python3 ffnn-senses.py --db-path $< --model-save-path $@ --embedding-dim 2 --hidden-dim 4
@@ -59,11 +62,14 @@ unannotated_model_emb64_hidden128.pt: $(UNANNOTATED_TRAINING_DATAFRAME)
 unannotated_model_emb128_hidden256.pt: $(UNANNOTATED_TRAINING_DATAFRAME)
 	python3 ffnn-senses.py --db-path $< --model-save-path $@ --embedding-dim 128 --hidden-dim 256
 
+unannotated_model_emb128_hidden512.pt: $(UNANNOTATED_TRAINING_DATAFRAME)
+	python3 ffnn-senses.py --db-path $< --model-save-path $@ --embedding-dim 128 --hidden-dim 512
+
 
 
 
 # Evaluate all trained sense_annotated_models
-evaluate-models: eval_sense_annotated_emb2_hidden4.out eval_sense_annotated_emb4_hidden8.out eval_sense_annotated_emb8_hidden16.out eval_sense_annotated_emb16_hidden32.out eval_sense_annotated_emb32_hidden64.out eval_sense_annotated_emb64_hidden128.out eval_sense_annotated_emb128_hidden256.out eval_unannotated_emb2_hidden4.out eval_unannotated_emb4_hidden8.out eval_unannotated_emb8_hidden16.out eval_unannotated_emb16_hidden32.out eval_unannotated_emb32_hidden64.out eval_unannotated_emb64_hidden128.out eval_unannotated_emb128_hidden256.out
+evaluate-models: eval_sense_annotated_emb2_hidden4.out eval_sense_annotated_emb4_hidden8.out eval_sense_annotated_emb8_hidden16.out eval_sense_annotated_emb16_hidden32.out eval_sense_annotated_emb32_hidden64.out eval_sense_annotated_emb64_hidden128.out eval_sense_annotated_emb128_hidden256.out eval_sense_annotated_emb128_hidden512.out eval_unannotated_emb2_hidden4.out eval_unannotated_emb4_hidden8.out eval_unannotated_emb8_hidden16.out eval_unannotated_emb16_hidden32.out eval_unannotated_emb32_hidden64.out eval_unannotated_emb64_hidden128.out eval_unannotated_emb128_hidden256.out eval_unannotated_emb128_hidden512.out
 	echo "Model evaluations complete."
 
 eval_sense_annotated_emb2_hidden4.out: sense_annotated_model_emb2_hidden4.pt $(SENSE_ANNOTATED_TEST_DATAFRAME) evaluate_model.py
@@ -94,6 +100,10 @@ eval_sense_annotated_emb128_hidden256.out: sense_annotated_model_emb128_hidden25
 	rm -f $@
 	python3 evaluate_model.py --model sense_annotated_model_emb128_hidden256.pt --input-db $(SENSE_ANNOTATED_TEST_DATAFRAME) --output-db $@ --description "Sense Annotated, Embed=128, Hidden=256"
 
+eval_sense_annotated_emb128_hidden512.out: sense_annotated_model_emb128_hidden512.pt $(SENSE_ANNOTATED_TEST_DATAFRAME) evaluate_model.py
+	rm -f $@
+	python3 evaluate_model.py --model sense_annotated_model_emb128_hidden512.pt --input-db $(SENSE_ANNOTATED_TEST_DATAFRAME) --output-db $@ --description "Sense Annotated, Embed=128, Hidden=512"
+
 
 
 eval_unannotated_emb2_hidden4.out: unannotated_model_emb2_hidden4.pt $(UNANNOTATED_TEST_DATAFRAME) evaluate_model.py
@@ -123,3 +133,8 @@ eval_unannotated_emb64_hidden128.out: unannotated_model_emb64_hidden128.pt $(UNA
 eval_unannotated_emb128_hidden256.out: unannotated_model_emb128_hidden256.pt $(UNANNOTATED_TEST_DATAFRAME) evaluate_model.py
 	rm -f $@
 	python3 evaluate_model.py --model unannotated_model_emb128_hidden256.pt --input-db $(UNANNOTATED_TEST_DATAFRAME) --output-db $@ --description "Unannotated, Embed=128, Hidden=256"
+
+
+eval_unannotated_emb128_hidden512.out: unannotated_model_emb128_hidden512.pt $(UNANNOTATED_TEST_DATAFRAME) evaluate_model.py
+	rm -f $@
+	python3 evaluate_model.py --model unannotated_model_emb128_hidden512.pt --input-db $(UNANNOTATED_TEST_DATAFRAME) --output-db $@ --description "Unannotated, Embed=128, Hidden=512"
