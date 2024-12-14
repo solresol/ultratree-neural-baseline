@@ -67,7 +67,7 @@ def load_model(model_file: str) -> Tuple[SimpleFFNN, Dict[str, int], Dict[int, s
     
     return model, word_sense_to_index, index_to_word_sense, vocab_size, model_parameter_count, context_size
 
-def compute_penalty(correct_path, predicted_path):
+def compute_penalty(correct_path: str, predicted_path: str) -> float:
     """
     Computes the penalty based on the similarity between the correct and predicted paths.
 
@@ -92,7 +92,7 @@ def compute_penalty(correct_path, predicted_path):
     # If not exact match, penalty = 2^(-prefix_length)
     return 2**(-prefix_length)
 
-def main() -> None:
+def main():
     """
     Main function to evaluate the model.
 
