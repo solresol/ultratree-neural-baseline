@@ -92,7 +92,7 @@ def compute_penalty(correct_path: str, predicted_path: str) -> float:
     # If not exact match, penalty = 2^(-prefix_length)
     return 2**(-prefix_length)
 
-def main():
+def main() -> None:
     """
     Main function to evaluate the model.
 
