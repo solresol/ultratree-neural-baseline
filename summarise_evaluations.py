@@ -12,17 +12,20 @@ def main() -> None:
 
     with open(args.output_csv, mode='w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
-        csv_writer.writerow(['embedding_size', 'hidden_layer_size', 'augmentation', 'model_parameter_count',  'number_of_data_points', 'total_loss'])
+        csv_writer.writerow(['embedding_size', 'hidden_layer_size', 'augmentation', 'model_parameter_count',  'number_of_data_points', 'total_loss', 'noun_loss'])
 
         for db_path in args.databases:  # db_path is str
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
             # type of db_path is str from args.databases which is List[str]
-            cursor.execute("SELECT description, model_parameter_count,  number_of_data_points, total_loss FROM evaluation_runs;")
+            cursor.execute("""
+              SELECT description, model_parameter_count,  number_of_data_points, total_loss, sum(loss) as noun_loss
+                FROM inferences join evaluation_runs on (evaluation_run_id = validation_run_id)
+                WHERE correct_path like '1.%.%'""")
             rows = cursor.fetchall()
 
             for row in rows:
-                description: str; model_parameter_count: float; number_of_data_points: float; total_loss: float; description: str; model_parameter_count: int; number_of_data_points: int; total_loss: int; description, model_parameter_count,number_of_data_points, total_loss = row
+                description: str; model_parameter_count: float; number_of_data_points: float; total_loss: float; description: str; model_parameter_count: int; number_of_data_points: int; total_loss: int; description, model_parameter_count,number_of_data_points, total_loss, noun_loss = row
                 parts = description.split(',')
                 embedding_size: str = None
                 hidden_layer_size: str = None
@@ -36,7 +39,7 @@ def main() -> None:
                     else:
                         augmentation = part.strip()
 
-                csv_writer.writerow([embedding_size, hidden_layer_size, augmentation, model_parameter_count, number_of_data_points, total_loss])
+                csv_writer.writerow([embedding_size, hidden_layer_size, augmentation, model_parameter_count, number_of_data_points, total_loss, noun_loss])
 
             conn.close()
 
