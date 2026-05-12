@@ -3,7 +3,7 @@
 
 # This setting contains a list of rules that Sweep will check for. If any of these rules are broken in a new commit, Sweep will create an pull request to fix the broken rule.
 rules:
-  - "Python functions should have type annotations"
+  - "Python functions should have type annotations; this doesn't include argparse arguments, where it might have a `type` which doesn't always need to be specified"
 
 # This is the branch that Sweep will develop from and make pull requests to. Most people use 'main' or 'master' but some users also use 'dev' or 'staging'.
 branch: 'main'
